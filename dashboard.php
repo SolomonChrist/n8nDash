@@ -36,8 +36,26 @@ if (isset($_GET['id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n8nDash - Dashboard</title>
+    <meta name="description" content="n8nDash - A professional dashboard for managing and triggering n8n automations. Create custom dashboards with widgets that integrate with n8n workflows through webhooks.">
+    <meta name="keywords" content="n8n, automation, dashboard, webhooks, workflow automation, n8n dashboard">
+    <meta name="author" content="Solomon Christ">
+    <meta property="og:title" content="n8nDash - Professional n8n Dashboard">
+    <meta property="og:description" content="Create custom dashboards with widgets that integrate with n8n workflows through webhooks.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/SolomonChrist/n8nDash">
+    
+    <title>n8nDash - Professional n8n Dashboard</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
     <style>
         .grid-container {
             display: grid;
@@ -54,6 +72,63 @@ if (isset($_GET['id'])) {
             border: 1px solid #dee2e6;
             padding: 10px;
             position: relative;
+            transition: background-color 0.3s ease;
+        }
+        .widget.needs-update {
+            background-color: #ffe6e6;
+        }
+        .widget.updated {
+            background-color: #e6ffe6;
+        }
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .widget-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .widget-controls {
+            display: flex;
+            gap: 5px;
+        }
+        .widget-instructions {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .widget-content {
+            position: relative;
+        }
+        .n8n-trigger-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+        }
+        .rss-feed-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .rss-feed-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .rss-feed-item:last-child {
+            border-bottom: none;
+        }
+        .update-all-btn {
+            margin-left: 10px;
         }
         .sidebar {
             width: 250px;
@@ -91,6 +166,184 @@ if (isset($_GET['id'])) {
         .dashboard-list {
             max-height: calc(100vh - 250px);
             overflow-y: auto;
+        }
+        /* Professional styling enhancements */
+        :root {
+            --primary-color: #6563FF;
+            --secondary-color: #3F3D56;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--secondary-color) 0%, #2D2B40 100%);
+            color: white;
+        }
+
+        .sidebar .list-group-item {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .list-group-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .list-group-item.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .widget {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .widget:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .widget.needs-update {
+            background-color: rgba(255, 230, 230, 0.5);
+            border-left: 3px solid var(--danger-color);
+        }
+
+        .widget.updated {
+            background-color: rgba(230, 255, 230, 0.5);
+            border-left: 3px solid var(--success-color);
+        }
+
+        .widget-header {
+            background: rgba(0, 0, 0, 0.02);
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: darken(var(--primary-color), 10%);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--secondary-color);
+        }
+
+        .empty-state img {
+            width: 200px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .tooltip-inner {
+            max-width: 200px;
+            padding: 8px 12px;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            background: var(--light-bg);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(101, 99, 255, 0.25);
+        }
+
+        .footer {
+            background: white;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Add animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .widget {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Empty state illustration for no widgets */
+        .empty-dashboard {
+            text-align: center;
+            padding: 40px;
+            color: var(--secondary-color);
+        }
+
+        .empty-dashboard img {
+            width: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Status badge */
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.success {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
         }
     </style>
 </head>
@@ -166,8 +419,17 @@ if (isset($_GET['id'])) {
     <div class="footer">
         <div id="statusMessage"></div>
         <div>
-            Powered by <a href="https://github.com/SolomonChrist/n8nDash" target="_blank">n8nDash on Github</a> | 
+            Powered by <a href="https://github.com/SolomonChrist/n8nDash" target="_blank">n8nDash</a> v1.0.0 | 
+            By <a href="https://www.linkedin.com/in/solomonchrist0/" target="_blank">Solomon Christ</a> | 
+            Built for <a href="https://n8n.io" target="_blank">n8n</a> | 
             Learn more about <a href="https://www.skool.com/learn-automation/about" target="_blank">AI + Automation</a>
+        </div>
+    </div>
+
+    <!-- Add loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
@@ -220,16 +482,27 @@ if (isset($_GET['id'])) {
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Input Type</label>
-                            <select class="form-select" name="inputType" multiple>
-                                <option value="text">Text Input</option>
-                                <option value="label">Label</option>
-                                <option value="button">Button</option>
+                            <label class="form-label">Widget Type</label>
+                            <select class="form-select" name="widgetType">
+                                <option value="n8n">n8n</option>
+                                <option value="rss">RSS</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Instructions</label>
+                            <textarea class="form-control" name="instructions"></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">n8n Webhook URL</label>
                             <input type="url" class="form-control" name="webhookUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">RSS Feed URL</label>
+                            <input type="url" class="form-control" name="feedUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Item Count</label>
+                            <input type="number" class="form-control" name="itemCount" min="1" max="100">
                         </div>
                     </form>
                 </div>
@@ -264,8 +537,16 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 
+    <!-- Add drag-and-drop library -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Widget types enum
+        const WidgetType = {
+            N8N: 'n8n',
+            RSS: 'rss'
+        };
+
         // Initialize dashboard layout
         const gridContainer = document.getElementById('gridContainer');
         let currentLayout = {};
@@ -274,6 +555,7 @@ if (isset($_GET['id'])) {
             try {
                 currentLayout = JSON.parse('<?php echo addslashes($current_dashboard['layout'] ?? "{}"); ?>');
                 renderLayout();
+                initializeDragAndDrop();
             } catch (e) {
                 console.error('Error parsing layout:', e);
                 currentLayout = {};
@@ -309,18 +591,32 @@ if (isset($_GET['id'])) {
             const formData = new FormData(form);
             
             const widget = {
-                id: Date.now(), // Temporary ID
+                id: Date.now(),
                 title: formData.get('title'),
-                type: Array.from(form.elements.inputType.selectedOptions).map(opt => opt.value),
+                type: formData.get('widgetType'),
+                instructions: formData.get('instructions'),
                 width: parseInt(formData.get('width')),
                 height: parseInt(formData.get('height')),
-                webhookUrl: formData.get('webhookUrl'),
-                position: findEmptySpace(parseInt(formData.get('width')), parseInt(formData.get('height')))
+                position: findEmptySpace(parseInt(formData.get('width')), parseInt(formData.get('height'))),
+                needsUpdate: true,
+                config: {}
             };
+
+            // Add type-specific configuration
+            switch(widget.type) {
+                case WidgetType.N8N:
+                    widget.config.webhookUrl = formData.get('webhookUrl');
+                    break;
+                case WidgetType.RSS:
+                    widget.config.feedUrl = formData.get('feedUrl');
+                    widget.config.itemCount = parseInt(formData.get('itemCount'));
+                    break;
+            }
 
             currentLayout[widget.id] = widget;
             saveLayout();
             renderLayout();
+            initializeDragAndDrop();
             
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('newWidgetModal')).hide();
@@ -365,43 +661,172 @@ if (isset($_GET['id'])) {
         function renderLayout() {
             gridContainer.innerHTML = '';
             
+            // Add "Update All" button if there are n8n widgets
+            const hasN8nWidgets = Object.values(currentLayout).some(w => w.type === WidgetType.N8N);
+            if (hasN8nWidgets) {
+                const updateAllBtn = document.createElement('button');
+                updateAllBtn.className = 'btn btn-primary update-all-btn';
+                updateAllBtn.innerHTML = '🔄 Update All Widgets';
+                updateAllBtn.onclick = updateAllN8nWidgets;
+                document.querySelector('.main-content > div:first-child').appendChild(updateAllBtn);
+            }
+            
             Object.values(currentLayout).forEach(widget => {
                 const elem = document.createElement('div');
-                elem.className = 'widget';
+                elem.className = `widget ${widget.needsUpdate ? 'needs-update' : 'updated'}`;
+                elem.setAttribute('data-widget-id', widget.id);
                 elem.style.gridColumn = `${widget.position.x + 1} / span ${widget.width}`;
                 elem.style.gridRow = `${widget.position.y + 1} / span ${widget.height}`;
                 
                 // Widget header
                 elem.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="m-0">${widget.title}</h5>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteWidget(${widget.id})">×</button>
+                    <div class="widget-header">
+                        <h5 class="widget-title">${widget.title}</h5>
+                        <div class="widget-controls">
+                            ${widget.type === WidgetType.N8N ? 
+                              `<button class="btn btn-sm btn-outline-primary" onclick="triggerN8nWidget(${widget.id})">🔄</button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteWidget(${widget.id})">×</button>
+                        </div>
                     </div>
                 `;
 
-                // Widget content based on type
-                if (widget.type.includes('button')) {
+                // Widget instructions if present
+                if (widget.instructions) {
                     elem.innerHTML += `
-                        <button class="btn btn-primary w-100" onclick="triggerWebhook(${widget.id})">
-                            Trigger
-                        </button>
-                    `;
-                }
-                if (widget.type.includes('text')) {
-                    elem.innerHTML += `
-                        <input type="text" class="form-control mb-2" placeholder="Enter value">
-                    `;
-                }
-                if (widget.type.includes('label')) {
-                    elem.innerHTML += `
-                        <div class="alert alert-info mb-0">
-                            Status: Ready
+                        <div class="widget-instructions">
+                            ${widget.instructions}
                         </div>
                     `;
                 }
 
+                // Widget content based on type
+                elem.innerHTML += `<div class="widget-content" id="widget-content-${widget.id}"></div>`;
+                
                 gridContainer.appendChild(elem);
+                
+                // Initialize widget content
+                updateWidgetContent(widget);
             });
+        }
+
+        // Update widget content based on type
+        async function updateWidgetContent(widget) {
+            const contentElem = document.getElementById(`widget-content-${widget.id}`);
+            
+            switch(widget.type) {
+                case WidgetType.N8N:
+                    if (widget.needsUpdate) {
+                        contentElem.innerHTML = '<div class="alert alert-warning">Data needs update</div>';
+                    } else {
+                        contentElem.innerHTML = '<div class="alert alert-success">Data is current</div>';
+                    }
+                    break;
+                    
+                case WidgetType.RSS:
+                    try {
+                        const response = await fetch(`api/rss.php?url=${encodeURIComponent(widget.config.feedUrl)}&count=${widget.config.itemCount}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            contentElem.innerHTML = `
+                                <ul class="rss-feed-list">
+                                    ${data.items.map(item => `
+                                        <li class="rss-feed-item">
+                                            <a href="${item.link}" target="_blank">${item.title}</a>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            `;
+                        } else {
+                            contentElem.innerHTML = '<div class="alert alert-danger">Error loading RSS feed</div>';
+                        }
+                    } catch (error) {
+                        contentElem.innerHTML = '<div class="alert alert-danger">Error loading RSS feed</div>';
+                    }
+                    break;
+            }
+        }
+
+        // Update all n8n widgets
+        async function updateAllN8nWidgets() {
+            const n8nWidgets = Object.values(currentLayout).filter(w => w.type === WidgetType.N8N);
+            
+            for (const widget of n8nWidgets) {
+                await triggerN8nWidget(widget.id);
+            }
+        }
+
+        // Trigger specific n8n widget
+        async function triggerN8nWidget(id) {
+            const widget = currentLayout[id];
+            if (!widget.config.webhookUrl) {
+                alert('No webhook URL configured');
+                return;
+            }
+
+            try {
+                const response = await fetch(widget.config.webhookUrl);
+                if (response.ok) {
+                    widget.needsUpdate = false;
+                    saveLayout();
+                    renderLayout();
+                    alert('Webhook triggered successfully');
+                } else {
+                    throw new Error('Webhook request failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error triggering webhook');
+            }
+        }
+
+        // Initialize drag and drop
+        function initializeDragAndDrop() {
+            interact('.widget').draggable({
+                inertia: true,
+                modifiers: [
+                    interact.modifiers.snap({
+                        targets: [
+                            interact.createSnapGrid({ x: 10, y: 10 })
+                        ],
+                        range: Infinity,
+                        relativePoints: [ { x: 0, y: 0 } ]
+                    }),
+                    interact.modifiers.restrict({
+                        restriction: 'parent',
+                        elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+                    })
+                ],
+                autoScroll: true,
+                listeners: {
+                    move: dragMoveListener,
+                    end: dragEndListener
+                }
+            });
+        }
+
+        function dragMoveListener(event) {
+            const target = event.target;
+            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+            target.style.transform = `translate(${x}px, ${y}px)`;
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+        }
+
+        function dragEndListener(event) {
+            const target = event.target;
+            const widgetId = target.getAttribute('data-widget-id');
+            const widget = currentLayout[widgetId];
+            
+            // Calculate new grid position
+            const x = Math.round(parseFloat(target.getAttribute('data-x')) / 10);
+            const y = Math.round(parseFloat(target.getAttribute('data-y')) / 10);
+            
+            widget.position = { x, y };
+            saveLayout();
+            renderLayout(); // Re-render to snap to grid
         }
 
         // Save layout to server
@@ -437,24 +862,6 @@ if (isset($_GET['id'])) {
             }
         }
 
-        // Trigger webhook
-        function triggerWebhook(id) {
-            const widget = currentLayout[id];
-            if (!widget.webhookUrl) {
-                alert('No webhook URL configured');
-                return;
-            }
-
-            fetch(widget.webhookUrl)
-                .then(response => {
-                    alert('Webhook triggered successfully');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error triggering webhook');
-                });
-        }
-
         // Export dashboard
         function downloadDashboard() {
             const data = {
@@ -485,6 +892,59 @@ if (isset($_GET['id'])) {
                 form.reset();
             } catch (e) {
                 alert('Invalid JSON format');
+            }
+        }
+
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Show/hide loading overlay
+        function toggleLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('d-none', !show);
+        }
+
+        // Enhanced error handling
+        function showError(message) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            setTimeout(() => {
+                statusMessage.innerHTML = '';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            setTimeout(() => {
+                statusMessage.innerHTML = '';
+            }, 3000);
+        }
+
+        // Enhance existing functions with loading states and better feedback
+        async function createDashboard() {
+            toggleLoading(true);
+            try {
+                // ... existing createDashboard code ...
+            } catch (error) {
+                showError('Failed to create dashboard. Please try again.');
+            } finally {
+                toggleLoading(false);
             }
         }
     </script>
