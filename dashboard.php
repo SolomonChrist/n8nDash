@@ -66,6 +66,7 @@ if (isset($_GET['id'])) {
             border: 1px solid #dee2e6;
             height: calc(100vh - 200px);
             overflow: auto;
+            margin-bottom: 60px;
         }
         .widget {
             background-color: white;
@@ -131,19 +132,24 @@ if (isset($_GET['id'])) {
             margin-left: 10px;
         }
         .sidebar {
-            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            width: 280px;
             height: 100vh;
             position: fixed;
             left: 0;
             top: 0;
-            background-color: #f8f9fa;
-            border-right: 1px solid #dee2e6;
             padding: 20px;
             overflow-y: auto;
+            z-index: 1030;
+            display: flex;
+            flex-direction: column;
         }
         .main-content {
-            margin-left: 250px;
+            margin-left: 280px;
             padding: 20px;
+            min-height: calc(100vh - 60px);
+            width: calc(100% - 280px);
         }
         .logo-area {
             height: 60px;
@@ -151,31 +157,45 @@ if (isset($_GET['id'])) {
             background-repeat: no-repeat;
             background-position: center;
             margin-bottom: 20px;
+            padding: 10px;
+        }
+        .logo-area img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .logo-preview {
+            max-width: 200px;
+            max-height: 60px;
+            margin: 10px 0;
         }
         .footer {
             position: fixed;
             bottom: 0;
             right: 0;
-            left: 250px;
-            background-color: #f8f9fa;
+            left: 280px;
+            background-color: white;
             padding: 10px 20px;
-            border-top: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            z-index: 1029;
         }
         .dashboard-list {
-            max-height: calc(100vh - 250px);
+            flex: 1;
             overflow-y: auto;
+            margin-bottom: 80px;
         }
         /* Professional styling enhancements */
         :root {
-            --primary-color: #6563FF;
-            --secondary-color: #3F3D56;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
             --light-bg: #f8f9fa;
             --border-color: #dee2e6;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-text: #f8fafc;
         }
 
         body {
@@ -183,24 +203,74 @@ if (isset($_GET['id'])) {
         }
 
         .sidebar {
-            background: linear-gradient(180deg, var(--secondary-color) 0%, #2D2B40 100%);
-            color: white;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+        }
+
+        .sidebar .btn {
+            color: var(--sidebar-text);
+            border-color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 0.75rem;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .btn:hover {
+            background: var(--sidebar-hover);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar .btn-outline-primary {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .btn-outline-primary:hover {
+            background: var(--sidebar-hover);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .sidebar .list-group-item {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            transition: all 0.3s ease;
+            color: var(--sidebar-text);
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
         }
 
         .sidebar .list-group-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--sidebar-hover);
         }
 
         .sidebar .list-group-item.active {
             background: var(--primary-color);
             border-color: var(--primary-color);
+        }
+
+        .sidebar-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 280px;
+            padding: 20px;
+            background: var(--sidebar-bg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1031;
+        }
+
+        .user-menu {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-menu .user-email {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
         }
 
         .widget {
@@ -345,18 +415,46 @@ if (isset($_GET['id'])) {
             background: rgba(255, 193, 7, 0.1);
             color: var(--warning-color);
         }
+
+        /* Ensure save button and add widget button are properly aligned */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-right: 20px;
+        }
+
+        .dashboard-header .btn-group {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo-area"></div>
-        <a href="dashboard.php" class="btn btn-outline-primary w-100 mb-3">
+        <div class="logo-area">
+            <?php if (isset($_SESSION['logo_path'])): ?>
+                <img src="<?php echo htmlspecialchars($_SESSION['logo_path']); ?>" alt="Company Logo">
+            <?php endif; ?>
+        </div>
+        
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="user-email"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></div>
+            <button class="btn btn-outline-light btn-sm" onclick="showUserSettings()">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <a href="dashboard.php" class="btn btn-outline-light">
             🏠 Home
         </a>
-        <button class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#newDashboardModal">
+        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#newDashboardModal">
             ➕ New Dashboard
         </button>
-        <h5 class="mb-3">My Dashboards</h5>
+        
+        <h5 class="mt-4 mb-3 text-light">My Dashboards</h5>
         <div class="list-group dashboard-list mb-3">
             <?php foreach ($dashboards as $dashboard): ?>
                 <a href="?id=<?php echo $dashboard['id']; ?>" 
@@ -365,23 +463,37 @@ if (isset($_GET['id'])) {
                 </a>
             <?php endforeach; ?>
         </div>
-        <?php if ($current_dashboard): ?>
-            <button class="btn btn-secondary w-100 mb-2" onclick="downloadDashboard()">
-                ⬇️ Export Dashboard
-            </button>
-            <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#importDashboardModal">
-                ⬆️ Import Dashboard
-            </button>
-        <?php endif; ?>
+
+        <div class="sidebar-footer">
+            <a href="logout.php" class="btn btn-danger w-100">
+                🚪 Logout
+            </a>
+        </div>
     </div>
 
     <div class="main-content">
         <?php if ($current_dashboard): ?>
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="dashboard-header">
                 <h2><?php echo htmlspecialchars($current_dashboard['name']); ?></h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newWidgetModal">
-                    Add Widget
-                </button>
+                <div class="btn-group">
+                    <?php if ($current_dashboard): ?>
+                        <button class="btn btn-secondary" onclick="downloadDashboard()">
+                            ⬇️ Export Dashboard
+                        </button>
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importDashboardModal">
+                            ⬆️ Import Dashboard
+                        </button>
+                    <?php endif; ?>
+                    <button id="saveButton" class="btn btn-success" onclick="saveLayout(true)">
+                        💾 Save Dashboard
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newWidgetModal">
+                        Add Widget
+                    </button>
+                </div>
+            </div>
+            <div id="saveStatus" class="alert alert-success d-none position-fixed top-0 end-0 m-3" style="z-index: 1050;">
+                Changes saved successfully!
             </div>
             <div class="grid-container" id="gridContainer"></div>
         <?php else: ?>
@@ -553,11 +665,31 @@ if (isset($_GET['id'])) {
 
         <?php if ($current_dashboard): ?>
             try {
-                currentLayout = JSON.parse('<?php echo addslashes($current_dashboard['layout'] ?? "{}"); ?>');
+                const layoutData = <?php 
+                    $layout = $current_dashboard['layout'] ?? "{}";
+                    if (is_string($layout)) {
+                        echo $layout;
+                    } else {
+                        echo json_encode($layout, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    }
+                ?>;
+                
+                // Convert layout to object if it's an array
+                if (Array.isArray(layoutData)) {
+                    layoutData.forEach(widget => {
+                        if (widget.id) {
+                            currentLayout[widget.id] = widget;
+                        }
+                    });
+                } else {
+                    currentLayout = layoutData || {};
+                }
+                
                 renderLayout();
                 initializeDragAndDrop();
             } catch (e) {
                 console.error('Error parsing layout:', e);
+                showError('Error loading dashboard layout: ' + e.message);
                 currentLayout = {};
             }
         <?php endif; ?>
@@ -585,15 +717,69 @@ if (isset($_GET['id'])) {
             });
         }
 
+        // Add to your JavaScript section:
+        let hasUnsavedChanges = false;
+        let autoSaveTimeout = null;
+
+        // Initialize keyboard shortcuts and autosave
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    saveLayout(true);
+                }
+            });
+
+            // Add beforeunload event listener
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                    return e.returnValue;
+                }
+            });
+
+            // Update save button state
+            updateSaveButtonState();
+        });
+
+        // Function to update save button state
+        function updateSaveButtonState() {
+            const saveButton = document.getElementById('saveButton');
+            if (saveButton) {
+                if (hasUnsavedChanges) {
+                    saveButton.classList.add('btn-warning');
+                    saveButton.innerHTML = '💾 Save Changes*';
+                } else {
+                    saveButton.classList.remove('btn-warning');
+                    saveButton.innerHTML = '💾 Save Dashboard';
+                }
+            }
+        }
+
+        // Function to show save status
+        function showSaveStatus(success = true) {
+            const saveStatus = document.getElementById('saveStatus');
+            saveStatus.textContent = success ? 'Changes saved successfully!' : 'Failed to save changes';
+            saveStatus.className = `alert alert-${success ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
+            saveStatus.style.display = 'block';
+            
+            setTimeout(() => {
+                saveStatus.style.display = 'none';
+            }, 2000);
+        }
+
         // Create new widget
         function createWidget() {
             const form = document.getElementById('newWidgetForm');
             const formData = new FormData(form);
+            const widgetType = formData.get('widgetType');
             
             const widget = {
                 id: Date.now(),
                 title: formData.get('title'),
-                type: formData.get('widgetType'),
+                type: widgetType,
                 instructions: formData.get('instructions'),
                 width: parseInt(formData.get('width')),
                 height: parseInt(formData.get('height')),
@@ -602,25 +788,32 @@ if (isset($_GET['id'])) {
                 config: {}
             };
 
-            // Add type-specific configuration
-            switch(widget.type) {
-                case WidgetType.N8N:
-                    widget.config.webhookUrl = formData.get('webhookUrl');
-                    break;
-                case WidgetType.RSS:
-                    widget.config.feedUrl = formData.get('feedUrl');
-                    widget.config.itemCount = parseInt(formData.get('itemCount'));
-                    break;
+            if (widgetType === WidgetType.N8N) {
+                widget.config = {
+                    webhookUrl: formData.get('webhookUrl'),
+                    httpMethod: formData.get('httpMethod') || 'GET',
+                    variables: formData.get('variables') ? JSON.parse(formData.get('variables')) : {}
+                };
+            } else if (widgetType === WidgetType.RSS) {
+                widget.config = {
+                    feedUrl: formData.get('feedUrl'),
+                    itemCount: parseInt(formData.get('itemCount'))
+                };
             }
 
             currentLayout[widget.id] = widget;
-            saveLayout();
-            renderLayout();
-            initializeDragAndDrop();
+            hasUnsavedChanges = true;
+            updateSaveButtonState();
             
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('newWidgetModal')).hide();
-            form.reset();
+            // Save immediately when creating a new widget
+            saveLayout(true).then(() => {
+                renderLayout();
+                initializeDragAndDrop();
+                bootstrap.Modal.getInstance(document.getElementById('newWidgetModal')).hide();
+                form.reset();
+            }).catch(error => {
+                showError('Failed to save widget: ' + error.message);
+            });
         }
 
         // Find empty space for new widget
@@ -661,6 +854,12 @@ if (isset($_GET['id'])) {
         function renderLayout() {
             gridContainer.innerHTML = '';
             
+            // Remove existing "Update All" button if it exists
+            const existingUpdateBtn = document.querySelector('.update-all-btn');
+            if (existingUpdateBtn) {
+                existingUpdateBtn.remove();
+            }
+            
             // Add "Update All" button if there are n8n widgets
             const hasN8nWidgets = Object.values(currentLayout).some(w => w.type === WidgetType.N8N);
             if (hasN8nWidgets) {
@@ -678,6 +877,11 @@ if (isset($_GET['id'])) {
                 elem.style.gridColumn = `${widget.position.x + 1} / span ${widget.width}`;
                 elem.style.gridRow = `${widget.position.y + 1} / span ${widget.height}`;
                 
+                // Reset any transform that might have been applied during dragging
+                elem.style.transform = '';
+                elem.removeAttribute('data-x');
+                elem.removeAttribute('data-y');
+                
                 // Widget header
                 elem.innerHTML = `
                     <div class="widget-header">
@@ -685,6 +889,7 @@ if (isset($_GET['id'])) {
                         <div class="widget-controls">
                             ${widget.type === WidgetType.N8N ? 
                               `<button class="btn btn-sm btn-outline-primary" onclick="triggerN8nWidget(${widget.id})">🔄</button>` : ''}
+                            <button class="btn btn-sm btn-outline-secondary" onclick="editWidget(${widget.id})">✏️</button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteWidget(${widget.id})">×</button>
                         </div>
                     </div>
@@ -760,44 +965,70 @@ if (isset($_GET['id'])) {
         async function triggerN8nWidget(id) {
             const widget = currentLayout[id];
             if (!widget.config.webhookUrl) {
-                alert('No webhook URL configured');
+                showError('No webhook URL configured');
                 return;
             }
 
             try {
-                const response = await fetch(widget.config.webhookUrl);
+                let url = widget.config.webhookUrl;
+                const method = widget.config.httpMethod || 'GET';
+                const variables = widget.config.variables || {};
+
+                // For GET requests, append variables to URL
+                if (method === 'GET' && Object.keys(variables).length > 0) {
+                    const params = new URLSearchParams(variables);
+                    url += (url.includes('?') ? '&' : '?') + params.toString();
+                }
+
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                // For POST requests, add variables to body
+                if (method === 'POST' && Object.keys(variables).length > 0) {
+                    options.body = JSON.stringify(variables);
+                }
+
+                const response = await fetch(url, options);
+                
                 if (response.ok) {
                     widget.needsUpdate = false;
-                    saveLayout();
+                    saveLayout(false);
                     renderLayout();
-                    alert('Webhook triggered successfully');
+                    showSuccess('Webhook triggered successfully');
                 } else {
-                    throw new Error('Webhook request failed');
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error triggering webhook');
+                showError(`Error triggering webhook: ${error.message}`);
             }
         }
 
         // Initialize drag and drop
         function initializeDragAndDrop() {
             interact('.widget').draggable({
-                inertia: true,
+                inertia: false, // Disable inertia for more precise positioning
                 modifiers: [
                     interact.modifiers.snap({
                         targets: [
-                            interact.createSnapGrid({ x: 10, y: 10 })
+                            interact.snappers.grid({
+                                x: gridContainer.clientWidth / 160,
+                                y: gridContainer.clientHeight / 90
+                            })
                         ],
                         range: Infinity,
-                        relativePoints: [ { x: 0, y: 0 } ]
+                        relativePoints: [{ x: 0, y: 0 }]
                     }),
                     interact.modifiers.restrict({
                         restriction: 'parent',
                         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
                     })
                 ],
-                autoScroll: true,
                 listeners: {
                     move: dragMoveListener,
                     end: dragEndListener
@@ -807,12 +1038,19 @@ if (isset($_GET['id'])) {
 
         function dragMoveListener(event) {
             const target = event.target;
-            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-            target.style.transform = `translate(${x}px, ${y}px)`;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
+            const widget = currentLayout[target.getAttribute('data-widget-id')];
+            
+            // Calculate grid position
+            const gridX = Math.round(event.dx / (gridContainer.clientWidth / 160));
+            const gridY = Math.round(event.dy / (gridContainer.clientHeight / 90));
+            
+            // Update widget position
+            widget.position.x = Math.max(0, Math.min(widget.position.x + gridX, 160 - widget.width));
+            widget.position.y = Math.max(0, Math.min(widget.position.y + gridY, 90 - widget.height));
+            
+            // Update element position
+            target.style.gridColumn = `${widget.position.x + 1} / span ${widget.width}`;
+            target.style.gridRow = `${widget.position.y + 1} / span ${widget.height}`;
         }
 
         function dragEndListener(event) {
@@ -820,44 +1058,72 @@ if (isset($_GET['id'])) {
             const widgetId = target.getAttribute('data-widget-id');
             const widget = currentLayout[widgetId];
             
-            // Calculate new grid position
-            const x = Math.round(parseFloat(target.getAttribute('data-x')) / 10);
-            const y = Math.round(parseFloat(target.getAttribute('data-y')) / 10);
+            hasUnsavedChanges = true;
+            updateSaveButtonState();
             
-            widget.position = { x, y };
-            saveLayout();
-            renderLayout(); // Re-render to snap to grid
+            // Clear existing timeout
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+            }
+            
+            // Set new timeout for autosave
+            autoSaveTimeout = setTimeout(() => {
+                saveLayout(false);
+            }, 2000);
         }
 
         // Save layout to server
-        function saveLayout() {
-            fetch('api/dashboard.php', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    id: <?php echo $current_dashboard ? $current_dashboard['id'] : 'null'; ?>,
-                    layout: currentLayout
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    alert(data.error || 'Error saving layout');
+        async function saveLayout(showFeedback = false) {
+            const dashboardId = <?php echo $current_dashboard ? $current_dashboard['id'] : 'null'; ?>;
+            if (!dashboardId) {
+                const error = new Error('No dashboard selected');
+                showError(error.message);
+                throw error;
+            }
+
+            try {
+                const response = await fetch('api/dashboard.php', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: dashboardId,
+                        layout: currentLayout
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            })
-            .catch(error => {
+
+                const data = await response.json();
+
+                if (data.success) {
+                    hasUnsavedChanges = false;
+                    updateSaveButtonState();
+                    if (showFeedback) {
+                        showSuccess('Dashboard saved successfully');
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to save dashboard');
+                }
+            } catch (error) {
                 console.error('Error:', error);
-                alert('Error saving layout');
-            });
+                hasUnsavedChanges = true;
+                updateSaveButtonState();
+                showError('Error saving dashboard: ' + error.message);
+                throw error;
+            }
         }
 
         // Delete widget
         function deleteWidget(id) {
             if (confirm('Are you sure you want to delete this widget?')) {
                 delete currentLayout[id];
-                saveLayout();
+                hasUnsavedChanges = true;
+                updateSaveButtonState();
+                saveLayout(false); // Autosave
                 renderLayout();
             }
         }
@@ -866,14 +1132,14 @@ if (isset($_GET['id'])) {
         function downloadDashboard() {
             const data = {
                 name: <?php echo $current_dashboard ? json_encode($current_dashboard['name']) : '""'; ?>,
-                layout: currentLayout
+                layout: Object.values(currentLayout)
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'dashboard.json';
+            a.download = `dashboard_${<?php echo $current_dashboard ? $current_dashboard['id'] : '0'; ?>}_${Date.now()}.json`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
@@ -885,13 +1151,33 @@ if (isset($_GET['id'])) {
 
             try {
                 const data = JSON.parse(jsonText);
-                currentLayout = data.layout || {};
-                saveLayout();
-                renderLayout();
-                bootstrap.Modal.getInstance(document.getElementById('importDashboardModal')).hide();
-                form.reset();
+                if (!data.layout || !Array.isArray(data.layout)) {
+                    throw new Error('Invalid dashboard format: layout must be an array');
+                }
+
+                // Convert array to object with widget IDs as keys
+                const newLayout = {};
+                data.layout.forEach(widget => {
+                    if (!widget.id) {
+                        widget.id = Date.now() + Math.random().toString(36).substr(2, 9);
+                    }
+                    newLayout[widget.id] = widget;
+                });
+
+                currentLayout = newLayout;
+                hasUnsavedChanges = true;
+                updateSaveButtonState();
+                
+                saveLayout(true).then(() => {
+                    renderLayout();
+                    bootstrap.Modal.getInstance(document.getElementById('importDashboardModal')).hide();
+                    form.reset();
+                    showSuccess('Dashboard imported successfully');
+                }).catch(error => {
+                    showError('Failed to import dashboard: ' + error.message);
+                });
             } catch (e) {
-                alert('Invalid JSON format');
+                showError('Invalid dashboard format: ' + e.message);
             }
         }
 
@@ -936,17 +1222,357 @@ if (isset($_GET['id'])) {
             }, 3000);
         }
 
-        // Enhance existing functions with loading states and better feedback
-        async function createDashboard() {
-            toggleLoading(true);
-            try {
-                // ... existing createDashboard code ...
-            } catch (error) {
-                showError('Failed to create dashboard. Please try again.');
-            } finally {
-                toggleLoading(false);
+        // Edit widget
+        function editWidget(id) {
+            const widget = currentLayout[id];
+            const form = document.getElementById('editWidgetForm');
+            
+            // Set widget ID
+            form.elements.widgetId.value = id;
+            
+            // Set general properties
+            form.elements.title.value = widget.title;
+            form.elements.width.value = widget.width;
+            form.elements.height.value = widget.height;
+            form.elements.instructions.value = widget.instructions || '';
+            
+            // Show/hide and set type-specific properties
+            const n8nProperties = form.querySelector('.n8n-properties');
+            const rssProperties = form.querySelector('.rss-properties');
+            
+            if (widget.type === WidgetType.N8N) {
+                n8nProperties.style.display = 'block';
+                rssProperties.style.display = 'none';
+                form.elements.webhookUrl.value = widget.config.webhookUrl || '';
+                form.elements.httpMethod.value = widget.config.httpMethod || 'GET';
+                form.elements.variables.value = widget.config.variables ? 
+                    JSON.stringify(widget.config.variables, null, 2) : '';
+            } else if (widget.type === WidgetType.RSS) {
+                n8nProperties.style.display = 'none';
+                rssProperties.style.display = 'block';
+                form.elements.feedUrl.value = widget.config.feedUrl || '';
+                form.elements.itemCount.value = widget.config.itemCount || 5;
+            }
+            
+            new bootstrap.Modal(document.getElementById('editWidgetModal')).show();
+        }
+
+        function updateWidget() {
+            const form = document.getElementById('editWidgetForm');
+            const widgetId = form.elements.widgetId.value;
+            const widget = currentLayout[widgetId];
+            
+            // Update general properties
+            widget.title = form.elements.title.value;
+            widget.width = parseInt(form.elements.width.value);
+            widget.height = parseInt(form.elements.height.value);
+            widget.instructions = form.elements.instructions.value;
+            
+            // Update type-specific properties
+            if (widget.type === WidgetType.N8N) {
+                try {
+                    widget.config = {
+                        webhookUrl: form.elements.webhookUrl.value,
+                        httpMethod: form.elements.httpMethod.value,
+                        variables: form.elements.variables.value ? 
+                            JSON.parse(form.elements.variables.value) : {}
+                    };
+                } catch (error) {
+                    showError('Invalid JSON in variables field');
+                    return;
+                }
+            } else if (widget.type === WidgetType.RSS) {
+                widget.config = {
+                    feedUrl: form.elements.feedUrl.value,
+                    itemCount: parseInt(form.elements.itemCount.value)
+                };
+            }
+            
+            // Save changes
+            hasUnsavedChanges = true;
+            updateSaveButtonState();
+            saveLayout(true).then(() => {
+                renderLayout();
+                bootstrap.Modal.getInstance(document.getElementById('editWidgetModal')).hide();
+            }).catch(error => {
+                showError('Failed to save widget: ' + error.message);
+            });
+        }
+
+        // Add this JavaScript to handle showing/hiding properties in the new widget modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const newWidgetForm = document.getElementById('newWidgetForm');
+            if (newWidgetForm) {
+                const typeSelect = newWidgetForm.elements.widgetType;
+                const n8nFields = newWidgetForm.querySelector('.n8n-properties');
+                const rssFields = newWidgetForm.querySelector('.rss-properties');
+
+                typeSelect.addEventListener('change', function() {
+                    if (this.value === WidgetType.N8N) {
+                        n8nFields.style.display = 'block';
+                        rssFields.style.display = 'none';
+                    } else if (this.value === WidgetType.RSS) {
+                        n8nFields.style.display = 'none';
+                        rssFields.style.display = 'block';
+                    }
+                });
+
+                // Trigger initial state
+                typeSelect.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Show user settings modal
+        function showUserSettings() {
+            new bootstrap.Modal(document.getElementById('userSettingsModal')).show();
+        }
+
+        // Update user settings
+        function updateUserSettings() {
+            const form = document.getElementById('userSettingsForm');
+            const formData = new FormData(form);
+
+            if (formData.get('newPassword') !== formData.get('confirmPassword')) {
+                showError('New passwords do not match');
+                return;
+            }
+
+            fetch('api/user.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Settings updated successfully');
+                    bootstrap.Modal.getInstance(document.getElementById('userSettingsModal')).hide();
+                    form.reset();
+                } else {
+                    showError(data.error || 'Error updating settings');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error updating settings');
+            });
+        }
+
+        function previewLogo(input) {
+            const preview = document.getElementById('logoPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Check file size (1MB limit)
+                if (file.size > 1024 * 1024) {
+                    showError('Logo file size must be less than 1MB');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '200px';
+                    img.style.maxHeight = '60px';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             }
         }
+
+        function saveSettings() {
+            const activeTab = document.querySelector('.nav-tabs .active').getAttribute('href');
+            
+            if (activeTab === '#passwordTab') {
+                updateUserSettings();
+            } else if (activeTab === '#logoTab') {
+                updateLogo();
+            }
+        }
+
+        function updateLogo() {
+            const form = document.getElementById('logoSettingsForm');
+            const formData = new FormData(form);
+            
+            const fileInput = form.elements.logo;
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 1024 * 1024) {
+                    showError('Logo file size must be less than 1MB');
+                    return;
+                }
+            } else {
+                showError('Please select a logo file');
+                return;
+            }
+
+            fetch('api/upload_logo.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Logo updated successfully');
+                    // Update logo in sidebar
+                    const logoArea = document.querySelector('.logo-area');
+                    logoArea.innerHTML = `<img src="${data.logo_path}" alt="Company Logo">`;
+                    // Update session path
+                    window.sessionStorage.setItem('logo_path', data.logo_path);
+                    bootstrap.Modal.getInstance(document.getElementById('userSettingsModal')).hide();
+                } else {
+                    throw new Error(data.error || 'Error updating logo');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error updating logo: ' + error.message);
+            });
+        }
     </script>
+
+    <!-- Add this new modal before the closing </body> tag -->
+    <div class="modal fade" id="editWidgetModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Widget</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editWidgetForm">
+                        <input type="hidden" name="widgetId">
+                        <!-- General Properties -->
+                        <div class="mb-3">
+                            <label class="form-label">Widget Title</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Size (columns x rows)</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="width" min="1" max="160" required>
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="height" min="1" max="90" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Instructions</label>
+                            <textarea class="form-control" name="instructions"></textarea>
+                        </div>
+                        <!-- n8n Specific Properties -->
+                        <div class="n8n-properties" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">n8n Webhook URL</label>
+                                <input type="url" class="form-control" name="webhookUrl">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">HTTP Method</label>
+                                <select class="form-select" name="httpMethod">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Variables (JSON format)</label>
+                                <textarea class="form-control" name="variables" placeholder='{"key": "value"}'></textarea>
+                                <small class="text-muted">Leave empty for no variables</small>
+                            </div>
+                        </div>
+                        <!-- RSS Specific Properties -->
+                        <div class="rss-properties" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">RSS Feed URL</label>
+                                <input type="url" class="form-control" name="feedUrl">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Item Count</label>
+                                <input type="number" class="form-control" name="itemCount" min="1" max="100">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateWidget()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Settings Modal -->
+    <div class="modal fade" id="userSettingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#passwordTab">Password</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#logoTab">Logo</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="passwordTab">
+                            <form id="userSettingsForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?>" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" name="currentPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" class="form-control" name="newPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" name="confirmPassword" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="logoTab">
+                            <form id="logoSettingsForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Upload Logo</label>
+                                    <input type="file" class="form-control" name="logo" accept="image/*" onchange="previewLogo(this)">
+                                    <small class="text-muted">Recommended size: 200x60px. Max file size: 1MB</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Preview</label>
+                                    <div id="logoPreview" class="logo-preview">
+                                        <?php if (isset($_SESSION['logo_path'])): ?>
+                                            <img src="<?php echo htmlspecialchars($_SESSION['logo_path']); ?>" alt="Current logo">
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 

@@ -120,4 +120,77 @@ Follow Me On YouTube: https://www.youtube.com/@SolomonChristAI
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Setup Instructions
+
+1. **Database Configuration**
+   - Copy `config/config.example.php` to `config/config.php`
+   - Update the database credentials in `config/config.php`:
+     ```php
+     define('DB_HOST', 'your_database_host');
+     define('DB_USER', 'your_database_username');
+     define('DB_PASS', 'your_database_password');
+     define('DB_NAME', 'your_database_name');
+     ```
+
+2. **Directory Permissions**
+   - Ensure these directories are writable:
+     ```bash
+     chmod 755 uploads/
+     chmod 755 uploads/logos/
+     ```
+
+3. **Database Setup**
+   - Import the database schema:
+     ```bash
+     mysql -u your_username -p your_database_name < sql/schema.sql
+     ```
+   - Create your first admin user:
+     ```sql
+     INSERT INTO users (username, email, password, is_admin) 
+     VALUES ('admin', 'admin@example.com', PASSWORD('your_password'), 1);
+     ```
+
+4. **Web Server Configuration**
+   - Point your web server to the project root
+   - Ensure PHP has write permissions to the uploads directory
+   - Configure your web server to handle PHP files
+
+5. **Testing**
+   - Visit the application URL
+   - Log in with your admin credentials
+   - Try creating a dashboard and widgets
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Error**
+   - Verify database credentials in config.php
+   - Ensure database server is running
+   - Check database user permissions
+
+2. **Upload Issues**
+   - Check directory permissions
+   - Verify PHP file upload settings
+   - Check file size limits
+
+3. **Session Issues**
+   - Verify PHP session configuration
+   - Check session directory permissions
+   - Clear browser cookies
+
+### Debug Mode
+
+To enable debug mode, set in config.php:
+```php
+define('DEBUG_MODE', true);
+```
+
+## Support
+
+For issues or questions, please:
+1. Check the troubleshooting guide
+2. Open an issue on GitHub
+3. Contact your administrator 
