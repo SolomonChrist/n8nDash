@@ -2,28 +2,32 @@
 session_start();
 require_once 'config/database.php';
 
-// Connect to DB (in case config file only defines constants)
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit();
+}
+
+// Connect to DB
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM dashboards WHERE user_id = " . intval($_SESSION['user_id']);
-$result = $conn->query($sql);
-
-if (!$result) {
-    die("Query failed: " . $conn->error);
-}
-
+// Prepare statement for getting dashboards
+$stmt = $conn->prepare("SELECT * FROM dashboards WHERE user_id = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 $dashboards = $result->fetch_all(MYSQLI_ASSOC);
 
-// Get current dashboard
-$current_dashboard_id = $_GET['id'] ?? ($dashboards[0]['id'] ?? null);
+// Get current dashboard if an ID is specified
 $current_dashboard = null;
-
-if ($current_dashboard_id) {
-    $sql = "SELECT * FROM dashboards WHERE id = $current_dashboard_id AND user_id = " . $_SESSION['user_id'];
-    $current_dashboard = $conn->query($sql)->fetch_assoc();
+if (isset($_GET['id'])) {
+    $stmt = $conn->prepare("SELECT * FROM dashboards WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $_GET['id'], $_SESSION['user_id']);
+    $stmt->execute();
+    $current_dashboard = $stmt->get_result()->fetch_assoc();
 }
 
 ?>
@@ -60,6 +64,7 @@ if ($current_dashboard_id) {
             background-color: #f8f9fa;
             border-right: 1px solid #dee2e6;
             padding: 20px;
+            overflow-y: auto;
         }
         .main-content {
             margin-left: 250px;
@@ -83,27 +88,36 @@ if ($current_dashboard_id) {
             display: flex;
             justify-content: space-between;
         }
+        .dashboard-list {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo-area"></div>
-        <h5 class="mb-3">Dashboards</h5>
-        <div class="list-group mb-3">
+        <a href="dashboard.php" class="btn btn-outline-primary w-100 mb-3">
+            🏠 Home
+        </a>
+        <button class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#newDashboardModal">
+            ➕ New Dashboard
+        </button>
+        <h5 class="mb-3">My Dashboards</h5>
+        <div class="list-group dashboard-list mb-3">
             <?php foreach ($dashboards as $dashboard): ?>
                 <a href="?id=<?php echo $dashboard['id']; ?>" 
-                   class="list-group-item list-group-item-action <?php echo $dashboard['id'] == $current_dashboard_id ? 'active' : ''; ?>">
+                   class="list-group-item list-group-item-action <?php echo ($current_dashboard && $dashboard['id'] == $current_dashboard['id']) ? 'active' : ''; ?>">
                     <?php echo htmlspecialchars($dashboard['name']); ?>
                 </a>
             <?php endforeach; ?>
         </div>
-        <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#newDashboardModal">
-            New Dashboard
-        </button>
         <?php if ($current_dashboard): ?>
-            <button class="btn btn-secondary w-100 mb-2" onclick="downloadDashboard()">Download Dashboard</button>
+            <button class="btn btn-secondary w-100 mb-2" onclick="downloadDashboard()">
+                ⬇️ Export Dashboard
+            </button>
             <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#importDashboardModal">
-                Import Dashboard
+                ⬆️ Import Dashboard
             </button>
         <?php endif; ?>
     </div>
@@ -120,7 +134,31 @@ if ($current_dashboard_id) {
         <?php else: ?>
             <div class="text-center mt-5">
                 <h3>Welcome to n8nDash</h3>
-                <p>Create your first dashboard to get started!</p>
+                <p>Your Dashboards:</p>
+                <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+                    <?php foreach ($dashboards as $dashboard): ?>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?php echo htmlspecialchars($dashboard['name']); ?></h5>
+                                    <p class="card-text">
+                                        Created: <?php echo date('M j, Y', strtotime($dashboard['created_at'])); ?>
+                                    </p>
+                                    <a href="?id=<?php echo $dashboard['id']; ?>" class="btn btn-primary">Open Dashboard</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body text-center d-flex align-items-center justify-content-center">
+                                <button class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#newDashboardModal">
+                                    ➕ Create New Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -228,10 +266,21 @@ if ($current_dashboard_id) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Initialize dashboard layout
+        const gridContainer = document.getElementById('gridContainer');
+        let currentLayout = {};
+
         <?php if ($current_dashboard): ?>
-            const currentDashboard = <?php echo $current_dashboard['layout'] ?: '{}'; ?>;
+            try {
+                currentLayout = JSON.parse('<?php echo addslashes($current_dashboard['layout'] ?? "{}"); ?>');
+                renderLayout();
+            } catch (e) {
+                console.error('Error parsing layout:', e);
+                currentLayout = {};
+            }
         <?php endif; ?>
 
+        // Create new dashboard
         function createDashboard() {
             const form = document.getElementById('newDashboardForm');
             const formData = new FormData(form);
@@ -243,103 +292,199 @@ if ($current_dashboard_id) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = `?id=${data.dashboard_id}`;
+                    window.location.href = `dashboard.php?id=${data.dashboard_id}`;
                 } else {
-                    alert(data.error);
+                    alert(data.error || 'Error creating dashboard');
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating dashboard');
             });
         }
 
+        // Create new widget
         function createWidget() {
             const form = document.getElementById('newWidgetForm');
             const formData = new FormData(form);
-            formData.append('dashboard_id', '<?php echo $current_dashboard_id; ?>');
+            
+            const widget = {
+                id: Date.now(), // Temporary ID
+                title: formData.get('title'),
+                type: Array.from(form.elements.inputType.selectedOptions).map(opt => opt.value),
+                width: parseInt(formData.get('width')),
+                height: parseInt(formData.get('height')),
+                webhookUrl: formData.get('webhookUrl'),
+                position: findEmptySpace(parseInt(formData.get('width')), parseInt(formData.get('height')))
+            };
 
-            fetch('api/widget.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.error);
+            currentLayout[widget.id] = widget;
+            saveLayout();
+            renderLayout();
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('newWidgetModal')).hide();
+            form.reset();
+        }
+
+        // Find empty space for new widget
+        function findEmptySpace(width, height) {
+            const occupied = new Set();
+            
+            // Mark occupied spaces
+            Object.values(currentLayout).forEach(widget => {
+                for (let x = widget.position.x; x < widget.position.x + widget.width; x++) {
+                    for (let y = widget.position.y; y < widget.position.y + widget.height; y++) {
+                        occupied.add(`${x},${y}`);
+                    }
                 }
+            });
+
+            // Find first available space
+            for (let y = 0; y < 90; y++) {
+                for (let x = 0; x < 160; x++) {
+                    let fits = true;
+                    for (let dx = 0; dx < width; dx++) {
+                        for (let dy = 0; dy < height; dy++) {
+                            if (occupied.has(`${x + dx},${y + dy}`)) {
+                                fits = false;
+                                break;
+                            }
+                        }
+                        if (!fits) break;
+                    }
+                    if (fits) {
+                        return { x, y };
+                    }
+                }
+            }
+            return { x: 0, y: 0 }; // Fallback
+        }
+
+        // Render dashboard layout
+        function renderLayout() {
+            gridContainer.innerHTML = '';
+            
+            Object.values(currentLayout).forEach(widget => {
+                const elem = document.createElement('div');
+                elem.className = 'widget';
+                elem.style.gridColumn = `${widget.position.x + 1} / span ${widget.width}`;
+                elem.style.gridRow = `${widget.position.y + 1} / span ${widget.height}`;
+                
+                // Widget header
+                elem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="m-0">${widget.title}</h5>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteWidget(${widget.id})">×</button>
+                    </div>
+                `;
+
+                // Widget content based on type
+                if (widget.type.includes('button')) {
+                    elem.innerHTML += `
+                        <button class="btn btn-primary w-100" onclick="triggerWebhook(${widget.id})">
+                            Trigger
+                        </button>
+                    `;
+                }
+                if (widget.type.includes('text')) {
+                    elem.innerHTML += `
+                        <input type="text" class="form-control mb-2" placeholder="Enter value">
+                    `;
+                }
+                if (widget.type.includes('label')) {
+                    elem.innerHTML += `
+                        <div class="alert alert-info mb-0">
+                            Status: Ready
+                        </div>
+                    `;
+                }
+
+                gridContainer.appendChild(elem);
             });
         }
 
+        // Save layout to server
+        function saveLayout() {
+            fetch('api/dashboard.php', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: <?php echo $current_dashboard ? $current_dashboard['id'] : 'null'; ?>,
+                    layout: currentLayout
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.error || 'Error saving layout');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving layout');
+            });
+        }
+
+        // Delete widget
+        function deleteWidget(id) {
+            if (confirm('Are you sure you want to delete this widget?')) {
+                delete currentLayout[id];
+                saveLayout();
+                renderLayout();
+            }
+        }
+
+        // Trigger webhook
+        function triggerWebhook(id) {
+            const widget = currentLayout[id];
+            if (!widget.webhookUrl) {
+                alert('No webhook URL configured');
+                return;
+            }
+
+            fetch(widget.webhookUrl)
+                .then(response => {
+                    alert('Webhook triggered successfully');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error triggering webhook');
+                });
+        }
+
+        // Export dashboard
         function downloadDashboard() {
-            const dashboardData = {
-                name: '<?php echo $current_dashboard['name']; ?>',
-                layout: currentDashboard
+            const data = {
+                name: <?php echo $current_dashboard ? json_encode($current_dashboard['name']) : '""'; ?>,
+                layout: currentLayout
             };
             
-            const blob = new Blob([JSON.stringify(dashboardData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${dashboardData.name.toLowerCase().replace(/\s+/g, '-')}.json`;
-            document.body.appendChild(a);
+            a.download = 'dashboard.json';
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            window.URL.revokeObjectURL(url);
         }
 
+        // Import dashboard
         function importDashboard() {
             const form = document.getElementById('importDashboardForm');
-            const formData = new FormData(form);
-            formData.append('dashboard_id', '<?php echo $current_dashboard_id; ?>');
+            const jsonText = form.elements.json.value;
 
-            fetch('api/import.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.error);
-                }
-            });
-        }
-
-        // Initialize grid with widgets
-        if (typeof currentDashboard !== 'undefined') {
-            const container = document.getElementById('gridContainer');
-            Object.entries(currentDashboard).forEach(([id, widget]) => {
-                const widgetElement = document.createElement('div');
-                widgetElement.className = 'widget';
-                widgetElement.style.gridColumn = `span ${widget.width}`;
-                widgetElement.style.gridRow = `span ${widget.height}`;
-                widgetElement.innerHTML = `
-                    <h5>${widget.title}</h5>
-                    ${widget.inputs.map(input => {
-                        switch (input.type) {
-                            case 'text':
-                                return `<input type="text" class="form-control mb-2" placeholder="${input.label}">`;
-                            case 'label':
-                                return `<div class="mb-2">${input.text}</div>`;
-                            case 'button':
-                                return `<button class="btn btn-primary mb-2" onclick="triggerWebhook('${widget.webhookUrl}')">${input.label}</button>`;
-                        }
-                    }).join('')}
-                `;
-                container.appendChild(widgetElement);
-            });
-        }
-
-        async function triggerWebhook(url) {
             try {
-                const response = await fetch(url);
-                const data = await response.json();
-                document.getElementById('statusMessage').textContent = 'Webhook triggered successfully';
-                setTimeout(() => {
-                    document.getElementById('statusMessage').textContent = '';
-                }, 3000);
-            } catch (error) {
-                document.getElementById('statusMessage').textContent = 'Error triggering webhook';
+                const data = JSON.parse(jsonText);
+                currentLayout = data.layout || {};
+                saveLayout();
+                renderLayout();
+                bootstrap.Modal.getInstance(document.getElementById('importDashboardModal')).hide();
+                form.reset();
+            } catch (e) {
+                alert('Invalid JSON format');
             }
         }
     </script>
