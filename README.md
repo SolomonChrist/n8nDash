@@ -110,7 +110,7 @@ We believe in the power of community! Whether you're fixing bugs, adding feature
 
 ## 📫 Support
 
-For questions about AI and Automation, visit our Skool website: [Learn Automation](https://www.skool.com/learn-automation/about)
+Please join my Skool page and Learn More about AI + Automation: [Learn Automation](https://www.skool.com/learn-automation/about)
 
 n8n Community Link: https://community.n8n.io/t/n8ndash-an-open-source-dashboard-for-n8n/
 
