@@ -2,16 +2,20 @@
 session_start();
 require_once 'config/database.php';
 
-echo "Came Here";
-/*
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit();
+// Connect to DB (in case config file only defines constants)
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user's dashboards
-$sql = "SELECT * FROM dashboards WHERE user_id = " . $_SESSION['user_id'];
-$dashboards = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+$sql = "SELECT * FROM dashboards WHERE user_id = " . intval($_SESSION['user_id']);
+$result = $conn->query($sql);
+
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
+
+$dashboards = $result->fetch_all(MYSQLI_ASSOC);
 
 // Get current dashboard
 $current_dashboard_id = $_GET['id'] ?? ($dashboards[0]['id'] ?? null);
@@ -21,7 +25,7 @@ if ($current_dashboard_id) {
     $sql = "SELECT * FROM dashboards WHERE id = $current_dashboard_id AND user_id = " . $_SESSION['user_id'];
     $current_dashboard = $conn->query($sql)->fetch_assoc();
 }
-*/
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
