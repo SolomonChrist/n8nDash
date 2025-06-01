@@ -30,33 +30,48 @@ EOT;
 }
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {	
+	
     $host = $_POST['db_host'] ?? 'localhost';
     $user = $_POST['db_user'] ?? '';
     $pass = $_POST['db_pass'] ?? '';
     $dbname = $_POST['db_name'] ?? 'n8n_dashboard';
-    
+
     // Test connection
     $result = testDatabaseConnection($host, $user, $pass);
-    
+	
     if ($result['success']) {
         $conn = $result['connection'];
         
+		// Select the database
+        if (!$conn->select_db($dbname)) {
+            die("Could not select database '$dbname': " . $conn->error);
+        }
+		
         // Create config file
         if (!createConfigFile($host, $user, $pass, $dbname)) {
             die("Error: Could not create config file");
         }
-        
+		
         // Read and execute SQL file
         $sql = file_get_contents('init.sql');
+		
         $sql = str_replace('$2y$10$YourDefaultHashHere', password_hash('password', PASSWORD_DEFAULT), $sql);
-        
+
         if ($conn->multi_query($sql)) {
-            header('Location: ../index.php');
-            exit;
-        } else {
-            die("Error executing SQL: " . $conn->error);
-        }
+			do {
+				// If there is a result set (SELECT, SHOW, etc.)
+				if ($result = $conn->store_result()) {
+					$result->free();
+				}
+			} while ($conn->more_results() && $conn->next_result());
+
+			// Installation complete
+			header('Location: ../index.php');
+			exit;
+		} else {
+			die("❌ Error executing SQL: " . $conn->error);
+		}
     }
 }
 ?>

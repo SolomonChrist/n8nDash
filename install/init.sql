@@ -1,7 +1,3 @@
--- Create database
-CREATE DATABASE IF NOT EXISTS n8n_dashboard;
-USE n8n_dashboard;
-
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -16,7 +12,7 @@ CREATE TABLE IF NOT EXISTS dashboards (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    layout JSON,
+    layout TEXT, -- layout TEXT (use JSON if your MySQL version is 5.7+)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)

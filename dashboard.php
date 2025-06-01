@@ -2,6 +2,8 @@
 session_start();
 require_once 'config/database.php';
 
+echo "Came Here";
+/*
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit();
@@ -19,6 +21,7 @@ if ($current_dashboard_id) {
     $sql = "SELECT * FROM dashboards WHERE id = $current_dashboard_id AND user_id = " . $_SESSION['user_id'];
     $current_dashboard = $conn->query($sql)->fetch_assoc();
 }
+*/
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -121,8 +124,8 @@ if ($current_dashboard_id) {
     <div class="footer">
         <div id="statusMessage"></div>
         <div>
-            Powered by <a href="https://n8ndash.com" target="_blank">n8nDash</a> | 
-            Learn more about <a href="https://skool.com" target="_blank">AI + Automation</a>
+            Powered by <a href="https://github.com/SolomonChrist/n8nDash" target="_blank">n8nDash on Github</a> | 
+            Learn more about <a href="https://www.skool.com/learn-automation/about" target="_blank">AI + Automation</a>
         </div>
     </div>
 
