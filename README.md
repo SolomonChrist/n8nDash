@@ -1,4 +1,5 @@
 # n8nDash v2 — Touch‑first dashboards for n8n automations
+NOTE: This is still in Beta and being updated all the time. A lot of bugs can and will happen. No guarantees, no warranties, this is AI Generated and Vibe Coded! USE AT YOUR OWN RISK! Not responsible for any issues so please know though we are trying our best to create something awesome, this is a passion project with and for the n8n community. Cheers!
 
 **n8nDash** is a PHP/MySQL + Bootstrap app that lets you build beautiful, client‑facing dashboards to **trigger** n8n workflows and **display** real‑time results with live progress.
 
