@@ -1,20 +1,12 @@
-# IDE/Editor
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
+# PHP
+/vendor/
+composer.lock
 
-# OS generated files
+# Config
+config/config.php
+
+# OS/editor
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-
-# Temporary and cache files
-*.cache
-*.tmp
-temp/
-cache/ 
+.idea/
+.vscode/

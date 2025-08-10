@@ -1,196 +1,56 @@
-# n8nDash 🚀
+# n8nDash v2 — Touch‑first dashboards for n8n automations
 
-> Your Command Center for n8n Automations
+**n8nDash** is a PHP/MySQL + Bootstrap app that lets you build beautiful, client‑facing dashboards to **trigger** n8n workflows and **display** real‑time results with live progress.
 
-n8nDash is an open-source dashboard platform designed to help individuals, teams, and businesses harness the full power of n8n automations, webhooks, and real-time data — all in one place. Whether you're a solopreneur, social media creator, or C-level executive, n8nDash serves as your command center for automation.
+- 🔘 One‑Tap Automations (App widgets)
+- 📊 Live Data Panels (Data widgets)
+- 🔄 Main button to refresh selected panels
+- 🛰️ Live progress via signed callbacks (SSE + polling fallback)
+- 🧩 JSON import/export (coming) and prebuilt examples
+- 🛡️ HMAC signatures to secure status updates
 
-## 🎯 Vision
-
-Our goal is to help people live the greatest lives ever lived — using AI + Automation. n8nDash makes this possible by providing an intuitive, touchscreen-ready interface for managing and triggering your n8n automations.
-
-## ✨ Features
-
-- 🔥 **One-Tap Automation**
-  - Trigger n8n workflows instantly via webhook buttons
-  - Custom button layouts and configurations
-  - Mobile and touchscreen optimized
-
-- 📊 **Live Data Integration**
-  - Display real-time data from CRMs
-  - Social media account metrics
-  - Calendar integrations
-  - Custom data sources via n8n webhooks
-
-- 🔄 **Dashboard Sharing**
-  - Export dashboards as JSON
-  - Import shared dashboard configurations
-  - Community sharing support
-
-- 🎨 **Customizable Interface**
-  - Grid-based widget layout (160x90)
-  - Multiple dashboard support
-  - Responsive design for all devices
-
-## 🛠️ Tech Stack
-
-- **Backend**: PHP 7.4+
-- **Database**: MySQL 5.7+
-- **Frontend**: HTML + Bootstrap
-- **Server**: Apache/Nginx
-- **Integration**: n8n Webhook API
-
-## 🚀 Quick Start
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/SolomonChrist/n8nDash.git
+## Quick Start (shared Apache hosting)
+1. **Clone / Upload** this repo to your host.
+2. Create a **MySQL** database + user.
+3. Copy `config/config.example.php` → `config/config.php` and set DB creds.
+4. Set a long random `status_webhook_secret` in `config.php`.
+5. Visit `/install/install.php` once to create tables + default admin (`admin`/`password`). Change password immediately.
+6. Log in at `/public/`.
+7. (Optional) Run the **example seeds**:
+   ```sql
+   SOURCE examples/seeds.sql;
    ```
+8. Import the **demo n8n workflows** from `demos/n8n/*.json` into your n8n instance.
+9. Edit each widget’s `config_json.webhook_url` to match your n8n Webhook URL.
+10. Open a dashboard → press **Main** for data → **Run** on app widgets.
 
-2. Navigate to the installation page:
-   ```
-   http://your-server/n8nDash/install/install.php
-   ```
-
-3. Follow the installation wizard to set up your database.
-
-4. Log in with default credentials:
-   - Username: `admin`
-   - Password: `password`
-
-5. **Important**: Change your password immediately after first login!
-
-## 📖 Manual Installation
-
-For advanced users who prefer manual setup:
-
-1. Clone the repository
-2. Create a MySQL database
-3. Import the schema from `install/init.sql`
-4. Configure `config/database.php` with your credentials:
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_USER', 'your_username');
-   define('DB_PASS', 'your_password');
-   define('DB_NAME', 'your_database_name');
-   ```
-
-## 🎨 Creating Your First Dashboard
-
-1. Log in to your n8nDash installation
-2. Click "New Dashboard" in the sidebar
-3. Name your dashboard
-4. Add widgets:
-   - Webhook buttons for automation triggers
-   - Data display panels
-   - Text inputs for dynamic data
-   - Status labels
-
-## 🔗 n8n Integration
-
-1. In n8n:
-   - Create a new workflow
-   - Add a webhook node as trigger
-   - Copy the webhook URL
-
-2. In n8nDash:
-   - Create a new button widget
-   - Paste the webhook URL
-   - Configure any parameters
-   - Save and test!
-
-## 🤝 Contributing
-
-We believe in the power of community! Whether you're fixing bugs, adding features, or improving documentation, your contributions are welcome.
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to your branch
-5. Open a Pull Request
-
-## 📫 Support
-
-Please join my Skool page and Learn More about AI + Automation: [Learn Automation](https://www.skool.com/learn-automation/about)
-
-n8n Community Link: https://community.n8n.io/t/n8ndash-an-open-source-dashboard-for-n8n/
-
-Add Me To LinkedIn: https://www.linkedin.com/in/solomonchrist0/
-
-Follow Me On YouTube: https://www.youtube.com/@SolomonChristAI
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Setup Instructions
-
-1. **Database Configuration**
-   - Copy `config/config.example.php` to `config/config.php`
-   - Update the database credentials in `config/config.php`:
-     ```php
-     define('DB_HOST', 'your_database_host');
-     define('DB_USER', 'your_database_username');
-     define('DB_PASS', 'your_database_password');
-     define('DB_NAME', 'your_database_name');
-     ```
-
-2. **Directory Permissions**
-   - Ensure these directories are writable:
-     ```bash
-     chmod 755 uploads/
-     chmod 755 uploads/logos/
-     ```
-
-3. **Database Setup**
-   - Import the database schema:
-     ```bash
-     mysql -u your_username -p your_database_name < sql/schema.sql
-     ```
-   - Create your first admin user:
-     ```sql
-     INSERT INTO users (username, email, password, is_admin) 
-     VALUES ('admin', 'admin@example.com', PASSWORD('your_password'), 1);
-     ```
-
-4. **Web Server Configuration**
-   - Point your web server to the project root
-   - Ensure PHP has write permissions to the uploads directory
-   - Configure your web server to handle PHP files
-
-5. **Testing**
-   - Visit the application URL
-   - Log in with your admin credentials
-   - Try creating a dashboard and widgets
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**
-   - Verify database credentials in config.php
-   - Ensure database server is running
-   - Check database user permissions
-
-2. **Upload Issues**
-   - Check directory permissions
-   - Verify PHP file upload settings
-   - Check file size limits
-
-3. **Session Issues**
-   - Verify PHP session configuration
-   - Check session directory permissions
-   - Clear browser cookies
-
-### Debug Mode
-
-To enable debug mode, set in config.php:
-```php
-define('DEBUG_MODE', true);
+## n8n Callback Contract
+When n8nDash calls your n8n Webhook, it includes:
+```json
+{ "job_id": 123, "callback": { "status": "https://YOUR_DASH/api/jobs/update", "complete": "https://YOUR_DASH/api/jobs/complete" } }
 ```
+Post progress to `callback.status` and final result to `callback.complete`. Include the **same** `X-N8N-Signature` header (HMAC‑SHA256 over body) you received, so n8nDash trusts the update.
 
-## Support
+## Example Dashboards Included
+- **Social Content Studio** — Blog Generator, IG Caption Maker, YouTube Subs KPI, Headlines list
+- **Executive Metrics Wall** — MRR KPI, Pipeline chart, Web Traffic, CSAT, Top Support Issues
+- **AI Intake & Ticketing Desk** — New Request app + My Tickets table
 
-For issues or questions, please:
-1. Check the troubleshooting guide
-2. Open an issue on GitHub
-3. Contact your administrator 
+## Concurrency
+By default, each user can run up to **10** widgets concurrently. Modify `n8n.max_concurrent_views` in `config.php`.
+
+## Charts
+Chart.js via CDN with local fallback (`public/assets/vendor/chart.fallback.js`).
+
+## Security
+- Password hashing with `password_hash()`
+- CSRF for browser POSTs
+- HMAC verification on job updates
+
+## Roadmap
+- Import/export dashboards JSON
+- Editor side panel for full widget config
+- Schedules & refresh intervals
+
+## License
+MIT — see `LICENSE`.

@@ -1,0 +1,1434 @@
+[
+  {
+    "name": "Blog Generator (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "blog_gen",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              },
+              {
+                "name": "topic",
+                "value": "={{$json[\"body\"].params.topic || 'AI for SMBs'}}"
+              },
+              {
+                "name": "tone",
+                "value": "={{$json[\"body\"].params.tone || 'Professional'}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Outline (LLM)"
+                },
+                {
+                  "name": "progress",
+                  "value": 20
+                },
+                {
+                  "name": "message",
+                  "value": "Drafting sections"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 20",
+        "name": "Status 20",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "const title = `Blog: ${$json.topic}`; const summary='Simulated summary.'; const body=`# ${title}\\n\\n${summary}\\n- Point A\\n- Point B`; return [{ title, summary, body }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { title: $json.title, summary: $json.summary, body: $json.body } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 20",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 20": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "IG Caption (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "ig_caption",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              },
+              {
+                "name": "product",
+                "value": "={{$json[\"body\"].params.product || 'Demo Product'}}"
+              },
+              {
+                "name": "style",
+                "value": "={{$json[\"body\"].params.style || 'Hype'}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Generating"
+                },
+                {
+                  "name": "progress",
+                  "value": 40
+                },
+                {
+                  "name": "message",
+                  "value": "Writing caption"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 40",
+        "name": "Status 40",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "const styles={Hype:['🔥','🚀','⚡'],Educational:['💡','📘','🧠'],Story:['✨','📖','🌟']}; const em=(styles[$json.style]||['⭐']).join(''); return [{ caption: `${em} ${$json.product}: Your next favorite thing. Tap to learn more! ${em}` }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { body: $json.caption } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 40",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 40": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "YouTube Subs (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "yt_subs",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Fetching"
+                },
+                {
+                  "name": "progress",
+                  "value": 25
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 25",
+        "name": "Status 25",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{ kpi: 12873, delta: 142 }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { kpi: $json.kpi, delta: $json.delta } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 25",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 25": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "Headlines (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "news",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Fetching"
+                },
+                {
+                  "name": "progress",
+                  "value": 30
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 30",
+        "name": "Status 30",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{ items: [ { title: 'AI boosts SMB productivity', url: 'https://example.com/a1' }, { title: 'n8n automations in 2025', url: 'https://example.com/a2' }, { title: 'Chart.js 4 quick start', url: 'https://example.com/a3' } ] }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { items: $json.items } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 30",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 30": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "Sales Pipeline (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "pipeline",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Aggregating"
+                },
+                {
+                  "name": "progress",
+                  "value": 50
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 50",
+        "name": "Status 50",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{ chart: { type: 'line', labels: ['Mon','Tue','Wed','Thu','Fri'], datasets: [{ label: 'Deals', data: [5,7,3,9,6] }] } }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { chart: $json.chart } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 50",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 50": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "AI Intake — New Request (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "new_request",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              },
+              {
+                "name": "summary",
+                "value": "={{$json[\"body\"].params.summary || 'Demo summary'}}"
+              },
+              {
+                "name": "priority",
+                "value": "={{$json[\"body\"].params.priority || 'Normal'}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Classifying"
+                },
+                {
+                  "name": "progress",
+                  "value": 30
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 30",
+        "name": "Status 30",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{ ticket: { id: 'T-10023', priority: $json.priority, assignee: 'Ops', summary: $json.summary } }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { ticket: $json.ticket } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 30",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 30": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  },
+  {
+    "name": "AI Intake — My Tickets (n8nDash Demo)",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "my_tickets",
+          "options": {
+            "rawBody": true
+          },
+          "responseMode": "onReceived",
+          "httpMethod": "POST"
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "job_id",
+                "value": "={{$json[\"body\"].job_id}}"
+              },
+              {
+                "name": "statusUrl",
+                "value": "={{$json[\"body\"].callback.status}}"
+              },
+              {
+                "name": "completeUrl",
+                "value": "={{$json[\"body\"].callback.complete}}"
+              },
+              {
+                "name": "sig",
+                "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+              }
+            ]
+          }
+        },
+        "id": "Set Context",
+        "name": "Set Context",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.statusUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "step",
+                  "value": "Querying"
+                },
+                {
+                  "name": "progress",
+                  "value": 40
+                }
+              ]
+            }
+          }
+        },
+        "id": "Status 40",
+        "name": "Status 40",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          780,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{ table: { columns: ['ID','Summary','Status'], rows: [['T-10023','Demo summary','Open'],['T-10024','Another task','In Progress']] } }];"
+        },
+        "id": "Simulate",
+        "name": "Simulate",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{$json.completeUrl}}",
+          "options": {
+            "headers": {
+              "parameters": [
+                {
+                  "name": "X-N8N-Signature",
+                  "value": "={{$json.sig}}"
+                }
+              ]
+            }
+          },
+          "jsonParameters": true,
+          "optionsUi": {
+            "body": {
+              "parameters": [
+                {
+                  "name": "job_id",
+                  "value": "={{$json.job_id}}"
+                },
+                {
+                  "name": "status",
+                  "value": "completed"
+                },
+                {
+                  "name": "result",
+                  "value": "={{ { table: $json.table } }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "Complete",
+        "name": "Complete",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1240,
+          260
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Context": {
+        "main": [
+          [
+            {
+              "node": "Status 40",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Status 40": {
+        "main": [
+          [
+            {
+              "node": "Simulate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simulate": {
+        "main": [
+          [
+            {
+              "node": "Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false
+  }
+]
