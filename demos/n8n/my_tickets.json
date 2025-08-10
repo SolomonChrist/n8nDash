@@ -1,0 +1,200 @@
+{
+  "name": "AI Intake — My Tickets (n8nDash Demo)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "my_tickets",
+        "options": {
+          "rawBody": true
+        },
+        "responseMode": "onReceived",
+        "httpMethod": "POST"
+      },
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "job_id",
+              "value": "={{$json[\"body\"].job_id}}"
+            },
+            {
+              "name": "statusUrl",
+              "value": "={{$json[\"body\"].callback.status}}"
+            },
+            {
+              "name": "completeUrl",
+              "value": "={{$json[\"body\"].callback.complete}}"
+            },
+            {
+              "name": "sig",
+              "value": "={{$json[\"headers\"][\"x-n8n-signature\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "Set Context",
+      "name": "Set Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        520,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.statusUrl}}",
+        "options": {
+          "headers": {
+            "parameters": [
+              {
+                "name": "X-N8N-Signature",
+                "value": "={{$json.sig}}"
+              }
+            ]
+          }
+        },
+        "jsonParameters": true,
+        "optionsUi": {
+          "body": {
+            "parameters": [
+              {
+                "name": "job_id",
+                "value": "={{$json.job_id}}"
+              },
+              {
+                "name": "step",
+                "value": "Querying"
+              },
+              {
+                "name": "progress",
+                "value": 40
+              }
+            ]
+          }
+        }
+      },
+      "id": "Status 40",
+      "name": "Status 40",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        780,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ table: { columns: ['ID','Summary','Status'], rows: [['T-10023','Demo summary','Open'],['T-10024','Another task','In Progress']] } }];"
+      },
+      "id": "Simulate",
+      "name": "Simulate",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.completeUrl}}",
+        "options": {
+          "headers": {
+            "parameters": [
+              {
+                "name": "X-N8N-Signature",
+                "value": "={{$json.sig}}"
+              }
+            ]
+          }
+        },
+        "jsonParameters": true,
+        "optionsUi": {
+          "body": {
+            "parameters": [
+              {
+                "name": "job_id",
+                "value": "={{$json.job_id}}"
+              },
+              {
+                "name": "status",
+                "value": "completed"
+              },
+              {
+                "name": "result",
+                "value": "={{ { table: $json.table } }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "Complete",
+      "name": "Complete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1240,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Context": {
+      "main": [
+        [
+          {
+            "node": "Status 40",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status 40": {
+      "main": [
+        [
+          {
+            "node": "Simulate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulate": {
+      "main": [
+        [
+          {
+            "node": "Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false
+}
