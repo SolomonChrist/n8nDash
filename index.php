@@ -3,45 +3,37 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>n8nDash v2 — Frontend Prototype</title>
-  <!-- Fonts & CSS Framework -->
+  <title>n8nDash v2 — All Widgets Configurable (v3)</title>
+  <!-- Fonts & CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Icons & Charts -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    // Chart.js fallback: if CDN fails, create a stub that avoids JS errors
-    window.addEventListener('error', () => { if (!window.Chart) { window.Chart = function(){ return { destroy(){} }; }; } }, { once:true });
-  </script>
+  <script>window.addEventListener('error',()=>{ if(!window.Chart){ window.Chart=function(){return{destroy(){}}}; }},{once:true});</script>
   <!-- Drag/Resize -->
   <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
   <style>
     :root{
-      --bg: #0b1020;            /* deep slate */
-      --surface: #0f162b;       /* shell */
-      --card: #121a2f;          /* panels */
-      --card-2: #0f1728;        /* alt */
-      --text: #e6edf6;
-      --muted: #9aa6b2;
-      --line: rgba(255,255,255,.08);
-      --shadow: 0 8px 40px rgba(2,8,23,.35);
-      --radius: 18px;
-      --accent: #0ea5e9;        /* Ocean default */
-      --accent-2: #22c55e;      /* Emerald */
-      --accent-3: #a855f7;      /* Orchid */
-      --accent-4: #f59e0b;      /* Citrus */
+      --bg:#0b1020; --surface:#0f162b; --card:#121a2f; --text:#e6edf6; --muted:#9aa6b2;
+      --line:rgba(255,255,255,.08); --shadow:0 8px 40px rgba(2,8,23,.35); --radius:18px;
+      /* Default theme (Ocean) */
+      --accent:#0ea5e9; --accent-rgb:14,165,233;
     }
+    /* Theme presets (set --accent + rgb for soft UI) */
+    .theme-ocean{ --accent:#0ea5e9; --accent-rgb:14,165,233; }
+    .theme-emerald{ --accent:#22c55e; --accent-rgb:34,197,94; }
+    .theme-orchid{ --accent:#a855f7; --accent-rgb:168,85,247; }
+    .theme-citrus{ --accent:#f59e0b; --accent-rgb:245,158,11; }
+
     *{box-sizing:border-box}
     html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     a{color:#9ec1ff}
-    .app{
-      display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr;min-height:100vh;
-      grid-template-areas:"sidebar header" "sidebar main";
-    }
+    .app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr;min-height:100vh;grid-template-areas:"sidebar header" "sidebar main";}
     .sidebar{grid-area:sidebar;background:linear-gradient(180deg,#0f1530,#0b1020);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
-    .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#04b7ff);display:grid;place-items:center;font-weight:900;color:#00131d;box-shadow:0 8px 20px rgba(14,165,233,.35)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#04b7ff);display:grid;place-items:center;color:#00131d;box-shadow:0 8px 20px rgba(2,8,23,.35)}
     .side-nav{margin-top:18px}
     .side-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none;border:1px solid transparent}
     .side-nav a:hover{background:rgba(255,255,255,.05);border-color:var(--line)}
@@ -55,7 +47,6 @@
     .main{grid-area:main;padding:18px;}
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
 
-    /* SCROLLABLE dashboard */
     .canvas{position:relative;border:1px dashed var(--line);border-radius:16px;background:linear-gradient(180deg,#0c1226,#0a0f20);min-height:70vh;padding:14px;overflow:visible}
     .grid-bg{position:absolute;inset:0;background-image:linear-gradient(transparent 31px,var(--line) 32px), linear-gradient(90deg, transparent 31px,var(--line) 32px);background-size:32px 32px;opacity:.35;pointer-events:none}
 
@@ -64,61 +55,66 @@
     .title{display:flex;align-items:center;gap:10px;font-weight:700}
     .title .icon{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.07);display:grid;place-items:center}
     .panel .body{padding:12px;}
+    .divider{height:1px;background:var(--line);margin:10px 0}
+    .badge-main{border:1px solid rgba(255,255,255,.15);padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(14,165,233,.15);color:#7dd3fc}
+    .toast-float{position:fixed;right:18px;bottom:18px;z-index:9999}
+    .handle{display:none;cursor:move}
+    .app.editing .handle{display:inline-grid}
+    .ghost{opacity:.65}
     .kpi{font-size:32px;font-weight:800}
     .delta.up{color:#22c55e}.delta.down{color:#ef4444}
 
-    .handle{cursor:move;}
-    .resize-corner{position:absolute;right:8px;bottom:8px;width:14px;height:14px;border:2px solid var(--line);border-bottom:none;border-right:none;transform:rotate(45deg);opacity:.7}
-    .ghost{opacity:.65}
-
-    .badge-main{border:1px solid rgba(255,255,255,.15);padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(14,165,233,.15);color:#7dd3fc}
-    .toast-float{position:fixed;right:18px;bottom:18px;z-index:9999}
-
-    /* Theme presets (accent only) */
-    .theme-ocean{--accent:#0ea5e9}
-    .theme-emerald{--accent:#22c55e}
-    .theme-orchid{--accent:#a855f7}
-    .theme-citrus{--accent:#f59e0b}
-    .accent{color:var(--accent)}
-    .btn-accent{background:var(--accent);border:none;color:#051018}
-    .btn-accent:hover{filter:brightness(1.05)}
-
-    .divider{height:1px;background:var(--line);margin:10px 0}
-    .table-darkish{--bs-table-bg:transparent;--bs-table-color:var(--text);--bs-table-border-color:var(--line)}
-
-    .form-chip{border:1px dashed var(--line);padding:6px 10px;border-radius:10px}
-
-    /* Config drawer inside widget */
-    .cfg-drawer{border:1px solid var(--line); background:rgba(255,255,255,.03); border-radius:12px; padding:10px;}
-
-    @media (max-width: 1080px){
-      .app{grid-template-columns:80px 1fr}
-      .brand .text{display:none}
-      .side-nav a span{display:none}
+    /* Elegant accent buttons (soft, theme-aware) */
+    .btn-accent{
+      border:1px solid rgba(var(--accent-rgb), .45) !important;
+      background:rgba(var(--accent-rgb), .16) !important;
+      color:var(--text) !important;
+      box-shadow:0 4px 18px rgba(var(--accent-rgb), .15) !important;
+      transition:.15s ease;
     }
+    .btn-accent:hover{ background:rgba(var(--accent-rgb), .24) !important; border-color:rgba(var(--accent-rgb), .7) !important; }
+    .btn-accent:disabled{ opacity:.75 }
+
+    /* Icon-only buttons (square) for header actions */
+    .btn-icon{
+      width:32px; height:32px; padding:0; display:grid; place-items:center;
+      border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text);
+    }
+    .btn-icon.accent{ border-color:rgba(var(--accent-rgb), .45); }
+    .btn-icon:hover{ background:rgba(255,255,255,.06); }
+    .btn-icon i{ width:16px; height:16px; }
+
+    /* Slim pill for Custom widget run */
+    .btn-pill{ border-radius:999px; height:32px; padding:0 12px; font-size:13px; }
+
+    /* Full-screen config overlay */
+    .nd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow:auto}
+    .nd-sheet{width:min(1100px,96vw);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .nd-sheet .nd-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+    .nd-sheet .nd-body{padding:14px}
+    .cfg-help pre{white-space:pre-wrap;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:10px}
+
+    @media (max-width:1080px){.app{grid-template-columns:80px 1fr}.brand .text{display:none}.side-nav a span{display:none}}
   </style>
 </head>
 <body class="theme-ocean">
-<div class="app">
+<div class="app" id="appRoot">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="brand mb-3">
-      <div class="logo">⚡</div>
-      <div class="text">n8nDash v2</div>
+      <div class="logo">⚡</div><div class="text">n8nDash v2</div>
     </div>
     <div class="side-nav vstack gap-1">
       <a href="#"><i data-lucide="layout"></i> <span>Dashboards</span></a>
       <a href="#"><i data-lucide="blocks"></i> <span>Widget Library</span></a>
       <a href="#"><i data-lucide="settings"></i> <span>Settings</span></a>
     </div>
-    <div class="mt-4 small text-secondary">Drag panels in **Edit Mode**. Your layout is saved to your browser (localStorage).</div>
+    <div class="mt-4 small text-secondary">Drag in <b>Edit Mode</b>. Layout & widget configs saved to localStorage.</div>
   </aside>
 
   <!-- Header -->
   <header class="header">
-    <div class="d-flex align-items-center gap-2">
-      <span class="chip">Demo — Frontend-only</span>
-    </div>
+    <div class="d-flex align-items-center gap-2"><span class="chip">Demo — Frontend-only</span></div>
     <div class="right">
       <div class="dropdown">
         <button class="btn btn-soft dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -131,7 +127,7 @@
           <li><a class="dropdown-item" data-theme="citrus" href="#"><span class="theme-dot" style="background:#f59e0b"></span> Citrus</a></li>
         </ul>
       </div>
-      <button id="btn-edit" class="btn btn-accent">Edit Mode</button>
+      <button id="btn-edit" class="btn btn-accent btn-pill">Edit Mode</button>
       <button id="btn-main" class="btn btn-soft"><i data-lucide="refresh-ccw"></i> Run Selected</button>
       <button id="btn-save" class="btn btn-soft"><i data-lucide="save"></i> Save Layout</button>
       <button id="btn-reset" class="btn btn-soft"><i data-lucide="undo2"></i> Reset</button>
@@ -143,725 +139,761 @@
     <div class="toolbar">
       <div>
         <h3 class="mb-0">Executive Metrics — Demo</h3>
-        <div class="text-secondary small">High-contrast dark UI with neon accents • Drag/resize in Edit Mode • Charts powered by Chart.js</div>
+        <div class="text-secondary small">All widgets configurable • Fetch from n8n webhooks</div>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <span class="badge-main">Main refresh targets: Data widgets</span>
-      </div>
+      <div class="d-flex align-items-center gap-2"><span class="badge-main">Main refresh targets: Data & Charts</span></div>
     </div>
 
     <section class="canvas" id="canvas">
       <div class="grid-bg"></div>
 
-      <!-- KPI: Revenue -->
-      <section class="panel" data-id="kpi-revenue" data-type="data" data-main="1" style="left:16px; top:16px; width:360px; height:160px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="dollar-sign"></i></div> Revenue (MRR)</div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge-main">Main</span>
-            <span class="handle"><i data-lucide="move"></i></span>
-          </div>
-        </div>
-        <div class="body">
-          <div class="kpi">$<span id="revenue">82,440</span> <span class="delta up">+4.3%</span></div>
-          <div class="text-secondary small">Updated 2 min ago</div>
-        </div>
-        <div class="resize-corner"></div>
-      </section>
+      <!-- DATA widgets -->
+      <section class="panel" data-id="kpi-revenue" data-kind="data" data-main="1" style="left:16px; top:16px; width:360px; height:180px;"></section>
+      <section class="panel" data-id="kpi-subs" data-kind="data" data-main="1" style="left:396px; top:16px; width:320px; height:180px;"></section>
+      <section class="panel" data-id="list-links" data-kind="data" data-main="1" style="left:736px; top:352px; width:560px; height:260px;"></section>
 
-      <!-- KPI: YouTube Subs -->
-      <section class="panel" data-id="kpi-subs" data-type="data" data-main="1" style="left:396px; top:16px; width:320px; height:160px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="users"></i></div> YouTube Subscribers</div>
-          <div class="d-flex align-items-center gap-2"><span class="badge-main">Main</span><span class="handle"><i data-lucide="move"></i></span></div>
-        </div>
-        <div class="body">
-          <div class="kpi"><span id="subs">12,873</span> <span class="delta up">+142</span></div>
-          <div class="text-secondary small">Last 24h</div>
-        </div>
-        <div class="resize-corner"></div>
-      </section>
+      <!-- CHART widgets -->
+      <section class="panel" data-id="chart-revenue" data-kind="chart" data-main="1" style="left:736px; top:16px; width:560px; height:320px;"></section>
+      <section class="panel" data-id="chart-traffic" data-kind="chart" data-main="1" style="left:16px; top:212px; width:700px; height:320px;"></section>
+      <section class="panel" data-id="chart-pie" data-kind="chart" data-main="0" style="left:16px; top:548px; width:360px; height:320px;"></section>
 
-      <!-- Line Chart: Revenue (30d) -->
-      <section class="panel" data-id="chart-revenue" data-type="data" data-main="1" style="left:736px; top:16px; width:560px; height:320px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="activity"></i></div> Revenue (30 days)</div>
-          <div class="d-flex align-items-center gap-2"><span class="badge-main">Main</span><span class="handle"><i data-lucide="move"></i></span></div>
-        </div>
-        <div class="body"><canvas id="revChart" height="110"></canvas></div>
-        <div class="resize-corner"></div>
-      </section>
-
-      <!-- Bar Chart: Traffic by Day -->
-      <section class="panel" data-id="chart-traffic" data-type="data" data-main="1" style="left:16px; top:192px; width:700px; height:320px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="trending-up"></i></div> Traffic (7 days)</div>
-          <div class="d-flex align-items-center gap-2"><span class="badge-main">Main</span><span class="handle"><i data-lucide="move"></i></span></div>
-        </div>
-        <div class="body"><canvas id="trafficChart" height="110"></canvas></div>
-        <div class="resize-corner"></div>
-      </section>
-
-      <!-- List: Top Issues -->
-      <section class="panel" data-id="list-issues" data-type="data" data-main="1" style="left:736px; top:352px; width:560px; height:240px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="alert-circle"></i></div> Top Support Issues</div>
-          <div class="d-flex align-items-center gap-2"><span class="badge-main">Main</span><span class="handle"><i data-lucide="move"></i></span></div>
-        </div>
-        <div class="body">
-          <table class="table table-sm table-darkish align-middle mb-0">
-            <thead><tr><th>Issue</th><th>Tickets</th><th>Owner</th></tr></thead>
-            <tbody id="issues">
-              <tr><td>Billing portal doesn’t load</td><td>34</td><td>Support</td></tr>
-              <tr><td>API key rotation docs</td><td>18</td><td>Docs</td></tr>
-              <tr><td>Webhook retries clarification</td><td>15</td><td>Eng</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="resize-corner"></div>
-      </section>
-
-      <!-- App Widget: Blog Generator (demo) -->
-      <section class="panel" data-id="app-blog" data-type="app" data-main="0" style="left:16px; top:528px; width:700px; height:300px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="file-text"></i></div> Blog Generator</div>
-          <div class="d-flex align-items-center gap-2"><span class="text-secondary small">App</span><span class="handle"><i data-lucide="move"></i></span></div>
-        </div>
-        <div class="body">
-          <form id="blogForm" class="row g-2">
-            <div class="col-md-6"><input class="form-control" name="topic" placeholder="Topic (e.g., AI for SMBs)" /></div>
-            <div class="col-md-4">
-              <select class="form-select" name="tone">
-                <option value="Professional">Professional</option>
-                <option value="Friendly">Friendly</option>
-                <option value="Playful">Playful</option>
-              </select>
-            </div>
-            <div class="col-md-2 d-grid"><button class="btn btn-accent" id="btn-run-blog" type="submit"><i data-lucide="play"></i> Run</button></div>
-          </form>
-          <div class="divider"></div>
-          <div id="blogOutput" class="small text-secondary">Result appears here…</div>
-        </div>
-        <div class="resize-corner"></div>
-      </section>
-
-      <!-- NEW: App Widget — Webhook App (Blog-style run view + inline editor) -->
-      <section class="panel" data-id="app-webhook" data-type="app" data-main="0" style="left:736px; top:608px; width:560px; height:460px;">
-        <div class="head">
-          <div class="title"><div class="icon"><i data-lucide="webhook"></i></div> Webhook App</div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-secondary small">App</span>
-            <button class="btn btn-soft btn-sm" id="btn-wh-config"><i data-lucide="settings"></i> Configure</button>
-            <span class="handle"><i data-lucide="move"></i></span>
-          </div>
-        </div>
-        <div class="body">
-          <!-- Inline editor drawer (hidden by default) -->
-          <div id="wh-config" class="cfg-drawer d-none"></div>
-
-          <!-- Run view (blog-style) -->
-          <div id="wh-run"></div>
-
-          <div class="divider"></div>
-          <div id="whResp" class="small text-secondary">No response yet.</div>
-        </div>
-        <div class="resize-corner"></div>
-      </section>
+      <!-- CUSTOM widgets (App style) -->
+      <section class="panel" data-id="app-blog" data-kind="custom" data-main="0" style="left:396px; top:548px; width:520px; height:300px;"></section>
+      <section class="panel" data-id="app-webhook" data-kind="custom" data-main="0" style="left:936px; top:548px; width:360px; height:420px;"></section>
 
     </section>
 
-    <!-- toasts -->
     <div class="toast-float" id="toasts"></div>
   </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ---------- Icons
+/* ========== Utilities ========== */
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const toastBox = $('#toasts');
+function toast(msg, type='info'){ const el=document.createElement('div'); el.className=`alert alert-${type==='info'?'secondary':(type==='success'?'success':(type==='danger'?'danger':'warning'))} shadow-sm mt-2`; el.innerHTML=msg; toastBox.appendChild(el); setTimeout(()=>el.remove(),4000); }
+function getByPath(obj, path){ if(!path) return undefined; return path.split('.').reduce((a,k)=> (a && (k in a)) ? a[k] : undefined, obj); }
+function uid(){ return 'id'+Math.random().toString(36).slice(2,9); }
+
+/* ========== Theme ========== */
+lucide.createIcons();
+const rootBody = document.body;
+const savedTheme = localStorage.getItem('nd.theme');
+if(savedTheme){ rootBody.classList.remove('theme-ocean','theme-emerald','theme-orchid','theme-citrus'); rootBody.classList.add(`theme-${savedTheme}`); }
+$$('[data-theme]').forEach(a=> a.addEventListener('click',e=>{
+  e.preventDefault(); const t=a.getAttribute('data-theme');
+  rootBody.classList.remove('theme-ocean','theme-emerald','theme-orchid','theme-citrus');
+  rootBody.classList.add(`theme-${t}`); localStorage.setItem('nd.theme',t);
+  $('.theme-dot').style.background = getComputedStyle(document.body).getPropertyValue('--accent');
+}));
+
+/* ========== Layout + Scrolling ========== */
+let EDIT=false;
+const appRoot = $('#appRoot');
+const canvas = $('#canvas');
+const panels = ()=> $$('.panel', canvas);
+function fitCanvasHeight(){
+  const bottoms = panels().map(p=> p.offsetTop + p.offsetHeight);
+  const maxBottom = bottoms.length ? Math.max(...bottoms) : 0;
+  const pad = 48, min = Math.max(window.innerHeight*0.6, 480);
+  canvas.style.height = Math.max(maxBottom+pad, min) + 'px';
+}
+const ro=new ResizeObserver(()=> fitCanvasHeight());
+function observe(){ panels().forEach(p=> ro.observe(p)); }
+(function loadLayout(){
+  const saved = JSON.parse(localStorage.getItem('nd.layout')||'null');
+  if(saved){
+    panels().forEach(p=>{ const s=saved[p.dataset.id]; if(s){ Object.assign(p.style,{left:s.left,top:s.top,width:s.width,height:s.height}); }});
+  }
+  fitCanvasHeight(); observe(); window.addEventListener('resize',fitCanvasHeight);
+})();
+$('#btn-save').addEventListener('click', ()=>{
+  const out={}; panels().forEach(p=> out[p.dataset.id]={left:p.style.left,top:p.style.top,width:p.style.width,height:p.style.height});
+  localStorage.setItem('nd.layout', JSON.stringify(out)); toast('Layout saved.','success');
+});
+$('#btn-reset').addEventListener('click', ()=>{ localStorage.removeItem('nd.layout'); localStorage.removeItem('nd.widgets.v3'); location.reload(); });
+$('#btn-edit').addEventListener('click', ()=>{
+  EDIT=!EDIT; $('#btn-edit').textContent = EDIT ? 'Editing… (Done)' : 'Edit Mode';
+  appRoot.classList.toggle('editing', EDIT);
+  panels().forEach(p=> p.classList.toggle('ghost', EDIT));
+});
+interact('.panel').draggable({
+  allowFrom: '.handle',
+  listeners:{
+    start(e){ if(!EDIT) e.interaction.stop(); },
+    move(e){ const t=e.target; const x=(parseFloat(t.getAttribute('data-x'))||0)+e.dx; const y=(parseFloat(t.getAttribute('data-y'))||0)+e.dy; t.style.transform=`translate(${x}px,${y}px)`; t.dataset.x=x; t.dataset.y=y; },
+    end(e){ const t=e.target; const x=parseFloat(t.dataset.x)||0, y=parseFloat(t.dataset.y)||0;
+      const r=t.getBoundingClientRect(), pr=canvas.getBoundingClientRect();
+      const left=Math.max(8, r.left-pr.left), top=Math.max(8, r.top-pr.top);
+      t.style.left=Math.round(left/16)*16+'px'; t.style.top=Math.round(top/16)*16+'px';
+      t.style.transform=''; t.dataset.x=0; t.dataset.y=0; fitCanvasHeight();
+    }
+  }
+}).resizable({
+  edges:{left:false,right:true,bottom:true,top:false},
+  listeners:{ move(e){ if(!EDIT) return; e.target.style.width=Math.round(e.rect.width/16)*16+'px'; e.target.style.height=Math.round(e.rect.height/16)*16+'px'; fitCanvasHeight(); } }
+});
+
+/* ========== Store ========== */
+const LS_WIDGETS='nd.widgets.v3';
+const store = {
+  load(){ try{ return JSON.parse(localStorage.getItem(LS_WIDGETS)||'{}'); }catch{return {}} },
+  save(obj){ localStorage.setItem(LS_WIDGETS, JSON.stringify(obj)); },
+  get(id){ const all=this.load(); return all[id]||null; },
+  set(id,cfg){ const all=this.load(); all[id]=cfg; this.save(all); }
+};
+
+/* ========== Overlay ========== */
+let overlayEl=null;
+function openOverlay(title, innerHTML){
+  closeOverlay();
+  overlayEl=document.createElement('div');
+  overlayEl.className='nd-overlay';
+  overlayEl.innerHTML=`
+    <div class="nd-sheet">
+      <div class="nd-head">
+        <div class="d-flex align-items-center gap-2">
+          <i data-lucide="settings"></i>
+          <div class="fw-bold">${esc(title)}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-soft btn-sm" data-ovl="close"><i data-lucide="x"></i> Close</button>
+        </div>
+      </div>
+      <div class="nd-body" id="nd-pane">${innerHTML}</div>
+    </div>`;
+  document.body.appendChild(overlayEl);
+  document.body.style.overflow='hidden';
+  lucide.createIcons();
+  overlayEl.addEventListener('click', (e)=>{ if(e.target===overlayEl) closeOverlay(); });
+  overlayEl.querySelector('[data-ovl="close"]').addEventListener('click', closeOverlay);
+}
+function closeOverlay(){ if(!overlayEl) return; overlayEl.remove(); overlayEl=null; document.body.style.overflow=''; }
+
+/* ========== Headers / Shells ========== */
+function headerTemplate(cfg){
+  const isActionable = (cfg.kind==='data' || cfg.kind==='chart');
+  return `
+  <div class="head">
+    <div class="title">
+      <div class="icon"><i data-lucide="${esc(cfg.icon||'box')}"></i></div>
+      <span class="w-title">${esc(cfg.title||'Untitled')}</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge-main">${esc(cfg.typeLabel|| (cfg.kind==='custom'?'App':'Data'))}</span>
+      ${isActionable ? `<button class="btn btn-icon btn-refresh accent" title="Refresh"><i data-lucide="refresh-ccw"></i></button>`:''}
+      <button class="btn btn-icon btn-config" title="Configure"><i data-lucide="settings"></i></button>
+      <span class="handle" title="Drag (Edit Mode)"><i data-lucide="move"></i></span>
+    </div>
+  </div>`;
+}
+function bodyShell(){
+  return `
+    <div class="body">
+      <div class="content"></div>
+      <div class="divider d-none"></div>
+      <div class="status small text-secondary d-none"></div>
+    </div>
+    <div class="resize-corner"></div>`;
+}
+function setStatus(panel, msg){
+  const div = panel.querySelector('.status');
+  const sep = panel.querySelector('.divider');
+  if(!msg){ div.classList.add('d-none'); div.textContent=''; sep.classList.add('d-none'); }
+  else{ div.classList.remove('d-none'); sep.classList.remove('d-none'); div.textContent=msg; }
+}
+
+/* ========== Common fetch helper ========== */
+async function fetchAndApply(panel, cfg, applyFn, formDataOverride){
+  const statusSetter = (txt)=> setStatus(panel, txt);
+  const btn = panel.querySelector('.btn-run') || panel.querySelector('.btn-refresh');
+  if(!btn){ toast('No action button found.','warning'); return; }
+  btn.disabled=true; const spin=document.createElement('span'); spin.className='spinner-border spinner-border-sm ms-2'; if(btn.classList.contains('btn-run')) btn.appendChild(spin);
+
+  const {url,method,sendAsJson,headers} = cfg.n8n||{};
+  if(!url){ toast('Please configure webhook URL.','warning'); statusSetter('Missing URL'); btn.disabled=false; spin.remove(); return; }
+
+  let fetchUrl=url, fetchOpts={ method:(method||'POST'), headers:{}, mode:'cors' };
+  (headers||[]).forEach(h=>{ if(h.key) fetchOpts.headers[h.key]=h.value||''; });
+
+  if((method||'POST')==='GET'){
+    if(formDataOverride){
+      const params = new URLSearchParams();
+      for(const [k,v] of formDataOverride.entries()){ if(v instanceof File) continue; params.append(k,String(v)); }
+      fetchUrl += (fetchUrl.includes('?')?'&':'?') + params.toString();
+    }
+  }else{
+    if(formDataOverride){
+      const hasFile=[...formDataOverride.values()].some(v=> v instanceof File);
+      if(!sendAsJson || hasFile){ if(fetchOpts.headers['Content-Type']) delete fetchOpts.headers['Content-Type']; fetchOpts.body=formDataOverride; }
+      else{ fetchOpts.headers['Content-Type']='application/json'; const obj={}; for(const [k,v] of formDataOverride.entries()){ obj[k]=v; } fetchOpts.body=JSON.stringify(obj); }
+    }else{
+      if(sendAsJson){ fetchOpts.headers['Content-Type']='application/json'; fetchOpts.body='{}'; }
+    }
+  }
+
+  statusSetter('Sending…');
+  try{
+    const res = await fetch(fetchUrl, fetchOpts);
+    const ct=(res.headers.get('content-type')||'').toLowerCase();
+    let data=null, text=null, blob=null;
+    if(ct.includes('application/json')) data=await res.json(); else if(ct.startsWith('text/')) text=await res.text(); else blob=await res.blob();
+    if(!res.ok) toast(`Webhook returned ${res.status}`,'warning'); else toast('Webhook succeeded.','success');
+    applyFn(data,text,blob,ct);
+  }catch(err){
+    toast('Network/CORS error calling webhook.','danger');
+    statusSetter('Error (see console / CORS)'); console.error(err);
+  }finally{ btn.disabled=false; spin.remove(); fitCanvasHeight(); }
+}
+
+/* ========== Data widgets ========== */
+function renderDataWidget(panel, cfg){
+  const content = panel.querySelector('.content');
+  const v = cfg.dataSpec||{};
+  content.innerHTML = `
+    <div class="row g-2 align-items-center">
+      <div class="col-12">
+        <div class="kpi">
+          <span class="main-val" id="v1-${cfg.id}">${esc(v.demoV1||'—')}</span>
+          <span class="delta ${((v.demoV2||'').toString().trim().startsWith('-'))?'down':'up'}" id="v2-${cfg.id}">${esc(v.demoV2||'')}</span>
+        </div>
+        <div class="small text-secondary">${esc(cfg.subtitle||'')}</div>
+      </div>
+      <div class="col-12" id="list-${cfg.id}"></div>
+    </div>
+  `;
   lucide.createIcons();
 
-  // ---------- Simple toast helper
-  const toastBox = document.getElementById('toasts');
-  function toast(msg, type='info'){
-    const el = document.createElement('div');
-    el.className = `alert alert-${type==='info'?'secondary':(type==='success'?'success':(type==='danger'?'danger':'warning'))} shadow-sm mt-2`;
-    el.innerHTML = msg;
-    toastBox.appendChild(el);
-    setTimeout(()=> el.remove(), 4000);
+  if((cfg.dataSpec?.mode||'kpi')==='list'){
+    $(`#list-${cfg.id}`).innerHTML = `
+      <table class="table table-sm table-darkish align-middle mb-0"><tbody id="tbody-${cfg.id}">
+        ${(v.demoList||[]).map(item=>`<tr><td><a href="${esc(item.url||'#')}" target="_blank">${esc(item.text||'Item')}</a></td></tr>`).join('') || `<tr><td class="text-secondary small">No items yet.</td></tr>`}
+      </tbody></table>
+    `;
   }
 
-  // ---------- Theme presets
-  const rootBody = document.body;
-  const savedTheme = localStorage.getItem('nd.theme');
-  if(savedTheme){ rootBody.className = `theme-${savedTheme}`; }
-  document.querySelectorAll('[data-theme]').forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const t = a.getAttribute('data-theme');
-      rootBody.className = `theme-${t}`;
-      localStorage.setItem('nd.theme', t);
-      document.querySelector('.theme-dot').style.background = getComputedStyle(document.body).getPropertyValue('--accent');
-    })
-  });
-
-  // ---------- Charts (demo data)
-  function initCharts(){
-    if(!window.Chart) return; // fallback noop
-    const ctx1 = document.getElementById('revChart');
-    const ctx2 = document.getElementById('trafficChart');
-    const gridColor = 'rgba(255,255,255,.08)';
-    const textColor = '#e6edf6';
-
-    new Chart(ctx1.getContext('2d'), {
-      type: 'line',
-      data: { labels: Array.from({length: 30}, (_,i)=> i+1), datasets: [{ label: 'Revenue', data: Array.from({length:30},()=> Math.round(7000+Math.random()*2000)), tension:.35, fill:false, borderWidth:2 }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{labels:{color:textColor}}}, scales:{ x:{ grid:{color:gridColor}, ticks:{color:textColor} }, y:{ grid:{color:gridColor}, ticks:{color:textColor} } } }
-    });
-
-    new Chart(ctx2.getContext('2d'), {
-      type: 'bar',
-      data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ label: 'Visits', data:[530,610,580,740,890,660,720] }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{labels:{color:textColor}}}, scales:{ x:{ grid:{color:gridColor}, ticks:{color:textColor} }, y:{ grid:{color:gridColor}, ticks:{color:textColor} } } }
-    });
-  }
-  initCharts();
-
-  // ---------- Edit mode, drag & resize + SCROLLING canvas size
-  let EDIT = false;
-  const canvas = document.getElementById('canvas');
-  const panels = () => Array.from(canvas.querySelectorAll('.panel'));
-
-  function fitCanvasHeight(){
-    const bottoms = panels().map(p=> p.offsetTop + p.offsetHeight);
-    const maxBottom = bottoms.length ? Math.max(...bottoms) : 0;
-    const pad = 48; // bottom padding
-    const min = Math.max(window.innerHeight * 0.6, 480);
-    canvas.style.height = Math.max(maxBottom + pad, min) + 'px';
-  }
-
-  // ResizeObserver to react to panel content growth (e.g., editing fields)
-  const ro = new ResizeObserver(()=> fitCanvasHeight());
-  function observePanels(){ panels().forEach(p=> ro.observe(p)); }
-
-  // Load saved layout
-  (function loadLayout(){
-    const saved = JSON.parse(localStorage.getItem('nd.layout')||'null');
-    if(saved){
-      panels().forEach(p=>{
-        const id = p.dataset.id; const s = saved[id];
-        if(!s) return; Object.assign(p.style, { left:s.left, top:s.top, width:s.width, height:s.height });
-      });
-    }
-    fitCanvasHeight();
-    observePanels();
-    window.addEventListener('resize', fitCanvasHeight);
-  })();
-
-  function persistLayout(){
-    const out = {};
-    panels().forEach(p=> out[p.dataset.id] = { left:p.style.left, top:p.style.top, width:p.style.width, height:p.style.height });
-    localStorage.setItem('nd.layout', JSON.stringify(out));
-    toast('Layout saved.','success');
-  }
-
-  document.getElementById('btn-save').addEventListener('click', persistLayout);
-  document.getElementById('btn-reset').addEventListener('click', ()=>{ localStorage.removeItem('nd.layout'); location.reload(); });
-
-  document.getElementById('btn-edit').addEventListener('click', ()=>{
-    EDIT = !EDIT;
-    document.getElementById('btn-edit').textContent = EDIT ? 'Editing… (Done)' : 'Edit Mode';
-    panels().forEach(p=> p.classList.toggle('ghost', EDIT));
-  });
-
-  interact('.panel').draggable({
-    allowFrom: '.handle',
-    listeners: {
-      start (e){ if(!EDIT) e.interaction.stop(); },
-      move (e){ const t=e.target; const x=(parseFloat(t.getAttribute('data-x'))||0)+e.dx; const y=(parseFloat(t.getAttribute('data-y'))||0)+e.dy; t.style.transform=`translate(${x}px, ${y}px)`; t.setAttribute('data-x',x); t.setAttribute('data-y',y); },
-      end (e){ const t=e.target; const x=parseFloat(t.getAttribute('data-x'))||0; const y=parseFloat(t.getAttribute('data-y'))||0; // set new left/top and reset transform
-        const rect=t.getBoundingClientRect(); const parentRect=canvas.getBoundingClientRect();
-        const left=Math.max(8, rect.left - parentRect.left);
-        const top=Math.max(8, rect.top - parentRect.top);
-        t.style.left = Math.round(left/16)*16 + 'px';
-        t.style.top  = Math.round(top/16)*16 + 'px';
-        t.style.transform=''; t.setAttribute('data-x',0); t.setAttribute('data-y',0);
-        fitCanvasHeight();
-      }
-    }
-  }).resizable({
-    edges: { left:false, right:true, bottom:true, top:false },
-    listeners: {
-      move (e){ if(!EDIT) return; e.target.style.width = Math.round(e.rect.width/16)*16 + 'px'; e.target.style.height = Math.round(e.rect.height/16)*16 + 'px'; fitCanvasHeight(); }
-    }
-  });
-
-  // ---------- Main button (refresh data widgets)
-  document.getElementById('btn-main').addEventListener('click', ()=>{
-    // Simulate live refresh of data widgets
-    toast('Refreshing data panels…');
-    document.getElementById('revenue').textContent = (80000 + Math.floor(Math.random()*10000)).toLocaleString();
-    document.getElementById('subs').textContent = (12000 + Math.floor(Math.random()*1000)).toLocaleString();
-    // re-render charts with slight noise
-    initCharts();
-  });
-
-  // ---------- App widget (Blog Generator) — demo only
-  document.getElementById('blogForm').addEventListener('submit', (e)=>{
+  // Header refresh button
+  $('.btn-refresh', panel).addEventListener('click', async (e)=>{
     e.preventDefault();
-    const fd = new FormData(e.target);
-    const topic = fd.get('topic')||'AI for SMBs';
-    const tone = fd.get('tone')||'Professional';
-    // Simulate live progress + result
-    const out = document.getElementById('blogOutput');
-    out.innerHTML = `<div class='text-secondary'>Starting…</div>`;
-    setTimeout(()=> out.innerHTML = `<div>📌 <b>Outline</b>…</div>`, 400);
-    setTimeout(()=> out.innerHTML = `<div>✍️ <b>Drafting</b>…</div>`, 900);
-    setTimeout(()=> out.innerHTML = `<div class='mb-2'>✅ <b>Complete</b></div><div class='fw-bold'>Blog: ${topic}</div><div class='text-secondary mb-2'>Tone: ${tone}</div><div>LLM-generated body preview…</div>`, 1600);
-    toast('Blog Generator finished.','success');
+    await fetchAndApply(panel, cfg, (data, text, blob, ct)=>{
+      if((cfg.dataSpec?.mode||'kpi')==='list'){
+        const listPath = cfg.dataSpec.listPath||'items';
+        const labelPath = cfg.dataSpec.itemLabelPath||'title';
+        const urlPath   = cfg.dataSpec.itemUrlPath||'url';
+        const arr = Array.isArray(getByPath(data, listPath)) ? getByPath(data,listPath) : [];
+        const rows = arr.map(it=>`<tr><td><a href="${esc(getByPath(it,urlPath)||'#')}" target="_blank">${esc(getByPath(it,labelPath)||'Item')}</a></td></tr>`).join('');
+        $(`#tbody-${cfg.id}`).innerHTML = rows || `<tr><td class="text-secondary small">No items returned.</td></tr>`;
+        setStatus(panel, `Loaded ${arr.length} items.`);
+      }else{
+        const v1 = getByPath(data, cfg.dataSpec.value1Path||'value1');
+        const v2 = getByPath(data, cfg.dataSpec.value2Path||'value2');
+        const v3 = getByPath(data, cfg.dataSpec.value3UrlPath||'value3Url');
+        const v1El = $(`#v1-${cfg.id}`), v2El = $(`#v2-${cfg.id}`);
+        v1El.textContent = (v1!=null) ? v1 : '—';
+        v2El.textContent = (v2!=null) ? v2 : '';
+        v2El.classList.toggle('down', (String(v2||'').trim().startsWith('-')));
+        if(v3){
+          if(!v1El.parentNode.querySelector('a.link-v1')){
+            const a=document.createElement('a'); a.className='link-v1'; a.style.textDecoration='none'; a.style.color='inherit'; v1El.replaceWith(a); a.appendChild(v1El);
+          }
+          v1El.parentNode.setAttribute('href', v3); v1El.parentNode.setAttribute('target','_blank');
+        }
+        setStatus(panel, 'OK');
+      }
+    });
   });
 
-  // =============================================================
-  // Webhook App — Blog-style RUN view + inline EDITOR
-  // =============================================================
-  (function(){
-    const LS_KEY = 'nd.webhookWidget.v3';
+  attachConfig(panel, cfg, 'data');
+}
 
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const esc = (s) => String(s ?? '').replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[m]));
+/* ========== Chart widgets ========== */
+function renderChartWidget(panel, cfg){
+  const content = panel.querySelector('.content');
+  const canvasId = `c-${cfg.id}`;
+  content.innerHTML = `<div style="height:calc(100% - 0px); min-height:180px;"><canvas id="${canvasId}"></canvas></div>`;
+  lucide.createIcons();
+  let chart=null;
 
-    const panel = document.querySelector('[data-id="app-webhook"]');
-    const runRoot = $('#wh-run', panel);
-    const cfgRoot = $('#wh-config', panel);
-    const respRoot = $('#whResp', panel);
-
-    const state = {
-      url: '',
-      method: 'POST',
-      sendAsJson: false, // If true and POST with no files -> JSON body
-      headers: [], // [{id,key,value}]
-      response: {
-        mode: 'auto', // auto|json|text|raw
-        extractPath: '', // dot path to show as message
-        showMessageOnly: false, // show only small message, hide detailed box
-        responseOnly: false, // hide form, just show a Run button
-        runButtonLabel: 'Run'
-      },
-      fields: [ // initial example fields
-        { id: uid(), type: 'text', label: 'Topic', name: 'topic', required: false, placeholder: 'AI for SMBs', defaultValue: '' },
-        { id: uid(), type: 'select', label: 'Tone', name: 'tone', required: false, options: ['Professional','Friendly','Playful'], defaultValue: 'Professional' }
-      ]
-    };
-
-    // Load persisted
-    try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(saved) deepAssign(state, saved); }catch{}
-
-    // Configure button
-    $('#btn-wh-config', panel).addEventListener('click', ()=>{
-      cfgRoot.classList.toggle('d-none');
-      renderConfig();
-      fitCanvasHeight();
+  async function run(){
+    await fetchAndApply(panel, cfg, (data)=>{
+      if(!window.Chart) return;
+      const ctx = $(`#${canvasId}`).getContext('2d');
+      if(chart){ chart.destroy(); }
+      const style = (cfg.chartSpec?.style||'line');
+      if(style==='line'){
+        const labels = getByPath(data, cfg.chartSpec.labelsPath||'xLabels') || Array.from({length:30},(_,i)=>i+1);
+        const dsData = getByPath(data, cfg.chartSpec.dataPath||'series[0].data') || Array.from({length:30},()=>Math.round(7000+Math.random()*2000));
+        const labelName = cfg.chartSpec.datasetLabel || (getByPath(data,'series[0].label')||'Series');
+        chart = new Chart(ctx,{type:'line',data:{labels,datasets:[{label:labelName,data:dsData,tension:.35,fill:false,borderWidth:2}]},
+          options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#e6edf6'},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#e6edf6'},grid:{color:'rgba(255,255,255,.08)'},suggestedMax: getByPath(data, cfg.chartSpec.yMaxPath||'yMax')||undefined}}}});
+        setStatus(panel, `Line: ${labels.length} points`);
+      }else if(style==='bar'){
+        const labels = getByPath(data, cfg.chartSpec.labelsPath||'labels') || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const dsData = getByPath(data, cfg.chartSpec.dataPath||'data') || [530,610,580,740,890,660,720];
+        const labelName = cfg.chartSpec.datasetLabel || (getByPath(data,'series[0].label')||'Visits');
+        chart = new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:labelName,data:dsData}]},
+          options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#e6edf6'},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#e6edf6'},grid:{color:'rgba(255,255,255,.08)'},suggestedMax: getByPath(data, cfg.chartSpec.yMaxPath||'yMax')||undefined}}}});
+        setStatus(panel, `Bar: ${labels.length} bars`);
+      }else{ // pie
+        const labels = getByPath(data, cfg.chartSpec.labelsPath||'labels') || ['A','B','C'];
+        const values = getByPath(data, cfg.chartSpec.dataPath||'values') || [30,40,30];
+        chart = new Chart(ctx,{type:'pie',data:{labels,datasets:[{data:values}]},options:{responsive:true,maintainAspectRatio:false}});
+        setStatus(panel, `Pie: ${labels.length} slices`);
+      }
     });
+  }
+  $('.btn-refresh', panel).addEventListener('click', (e)=>{ e.preventDefault(); run(); });
 
-    // Helpers
-    function uid(){ return 'f' + Math.random().toString(36).slice(2,9); }
-    function deepAssign(target, src){ for(const k in src){ if(src[k] && typeof src[k]==='object' && !Array.isArray(src[k])){ target[k]??={}; deepAssign(target[k], src[k]); } else target[k] = src[k]; } }
-    function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-    function getByPath(obj, path){ if(!path) return undefined; return path.split('.').reduce((a,k)=> (a && (k in a)) ? a[k] : undefined, obj); }
+  attachConfig(panel, cfg, 'chart');
+}
 
-    // ---------- RUN VIEW (blog-style form, minimal footer message)
-    function renderRun(){
-      const s = state;
-      const methodOpts = ['GET','POST'].map(m=>`<option ${s.method===m?'selected':''}>${m}</option>`).join('');
+/* ========== Custom (App) widgets ========== */
+function renderCustomWidget(panel, cfg){
+  const content = panel.querySelector('.content');
+  content.innerHTML = `
+    <form class="row g-2" id="frm-${cfg.id}">
+      ${(cfg.customSpec?.responseOnly)?'': (cfg.customSpec?.fields||[
+        {id:uid(),type:'text',name:'topic',placeholder:'Topic (e.g., AI for SMBs)'},
+        {id:uid(),type:'select',name:'tone',options:['Professional','Friendly','Playful']}
+      ]).map(f=>inputHtml(f)).join('')}
+      <div class="${(cfg.customSpec?.responseOnly)?'col-12 d-grid':'col-md-2 d-grid'}">
+        <button class="btn btn-accent btn-pill btn-run" type="submit"><i data-lucide="play"></i> ${esc(cfg.runLabel||'Run')}</button>
+      </div>
+    </form>
+    <div class="divider d-none"></div>
+    <div class="small status d-none" id="resp-${cfg.id}"></div>
+  `;
+  lucide.createIcons();
 
-      const fieldsHtml = s.response.responseOnly ? '' : s.fields.map(f=> inputHtml(f)).join('');
+  $(`#frm-${cfg.id}`, panel).addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const respEl = $(`#resp-${cfg.id}`, panel);
+    setStatus(panel, 'Sending…');
+    await fetchAndApply(panel, cfg, (data,text,blob,ct)=>{
+      // Show response below (nice message)
+      const msgEl = respEl;
+      if(ct.includes('application/json')) msgEl.innerHTML = `<pre class="small mb-0">${esc(JSON.stringify(data,null,2))}</pre>`;
+      else if(ct.startsWith('text/')) msgEl.innerHTML = `<pre class="small mb-0">${esc(text)}</pre>`;
+      else { const url = URL.createObjectURL(blob); msgEl.innerHTML = `Received <b>${esc(ct||'binary')}</b> (${blob.size.toLocaleString()} bytes). <a href="${url}" download="response">Download</a>`; }
+      msgEl.classList.remove('d-none'); panel.querySelector('.divider').classList.remove('d-none');
+      setStatus(panel, 'OK');
+    }, new FormData(e.target));
+  });
 
-      runRoot.innerHTML = `
-        <form id="whForm" class="row g-2" ${s.method==='POST' ? 'enctype="multipart/form-data"' : ''}>
-          <div class="col-12">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">Method</span>
-              <select id="whMethod" class="form-select">${methodOpts}</select>
-              <input id="whUrl" class="form-control" placeholder="https://your-n8n/webhook/..." value="${esc(s.url)}" />
-              <button class="btn btn-accent" id="whSend" type="submit"><i data-lucide="play"></i> ${esc(s.response.runButtonLabel || 'Run')}</button>
-            </div>
-            <div class="form-text">${s.sendAsJson? 'POST JSON body' : 'Auto body (multipart if files)'}. Files are ignored on GET. Configure headers & format via <b>Configure</b>.</div>
-          </div>
-          ${fieldsHtml || ''}
-        </form>
-      `;
-      lucide.createIcons();
+  attachConfig(panel, cfg, 'custom');
+}
+function inputHtml(f){
+  const id=esc(f.id||uid()), nm=esc(f.name||'field'), ph=f.placeholder?`placeholder="${esc(f.placeholder)}"`:'';
+  if(f.type==='select') return `<div class="col-md-4"><select id="${id}" name="${nm}" class="form-select">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>`;
+  if(f.type==='textarea') return `<div class="col-12"><textarea id="${id}" name="${nm}" rows="4" class="form-control" ${ph}></textarea></div>`;
+  if(f.type==='file') return `<div class="col-12"><input id="${id}" name="${nm}" type="file" class="form-control" /></div>`;
+  if(f.type==='checkbox') return `<div class="col-12 form-check ms-2"><input id="${id}" name="${nm}" class="form-check-input" type="checkbox"> <label class="form-check-label" for="${id}">${esc(f.label||nm)}</label></div>`;
+  if(f.type==='number') return `<div class="col-md-4"><input id="${id}" name="${nm}" type="number" class="form-control" ${ph}/></div>`;
+  return `<div class="col-md-6"><input id="${id}" name="${nm}" class="form-control" ${ph}/></div>`;
+}
 
-      // Set default values on inputs
-      if(!s.response.responseOnly){
-        for(const f of s.fields){
-          const el = runRoot.querySelector(`[name='${CSS.escape(f.name)}']`);
-          if(!el) continue;
-          if(f.type==='checkbox'){ el.checked = !!f.defaultValue; }
-          else if(f.type==='select'){ if(f.defaultValue) el.value = f.defaultValue; }
-          else if(f.type!=='file' && f.defaultValue!=null){ el.value = f.defaultValue; }
-        }
-      }
-
-      $('#whMethod', runRoot).addEventListener('change', e=>{ state.method = e.target.value; save(); });
-      $('#whUrl', runRoot).addEventListener('input', e=>{ state.url = e.target.value.trim(); save(); });
-      $('#whForm', runRoot).addEventListener('submit', onSubmit);
-      fitCanvasHeight();
-    }
-
-    function inputHtml(f){
-      const id = esc(f.id), nm = esc(f.name), req = f.required?'required':'';
-      const ph = f.placeholder? `placeholder="${esc(f.placeholder)}"` : '';
-      switch(f.type){
-        case 'text':
-          return `<div class="col-md-6"><input id="${id}" name="${nm}" class="form-control" ${ph} ${req} /></div>`;
-        case 'number':
-          return `<div class="col-md-3"><input id="${id}" name="${nm}" type="number" class="form-control" ${ph} ${req} /></div>`;
-        case 'textarea':
-          return `<div class="col-12"><textarea id="${id}" name="${nm}" rows="4" class="form-control" ${ph} ${req}></textarea></div>`;
-        case 'checkbox':
-          return `<div class="col-12 form-check ms-2"><input id="${id}" name="${nm}" class="form-check-input" type="checkbox"> <label class="form-check-label" for="${id}">${esc(f.label||nm)}</label></div>`;
-        case 'select':
-          return `<div class="col-md-3"><select id="${id}" name="${nm}" class="form-select">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>`;
-        case 'file':
-          return `<div class="col-12"><input id="${id}" name="${nm}" type="file" class="form-control" ${req} /></div>`;
-        default:
-          return `<div class="col-12"><input id="${id}" name="${nm}" class="form-control" ${ph} ${req} /></div>`;
-      }
-    }
-
-    async function onSubmit(e){
-      e.preventDefault();
-      const s = state;
-      const url = ($('#whUrl', runRoot).value||'').trim();
-      if(!url){ toast('Please enter a webhook URL.', 'warning'); return; }
-
-      const btn = $('#whSend', runRoot);
-      btn.disabled = true; const spin = document.createElement('span'); spin.className='spinner-border spinner-border-sm ms-2'; btn.appendChild(spin);
-
-      const form = $('#whForm', runRoot);
-      const hasFile = !!$$("input[type='file']", form).find(i=> i.files && i.files.length);
-      const method = $('#whMethod', runRoot).value || 'POST';
-
-      let fetchUrl = url;
-      let fetchOpts = { method, headers: {}, mode: 'cors' };
-
-      // Apply custom headers (skip Content-Type if we'll send multipart)
-      for(const h of (state.headers||[])){ if(!h.key) continue; fetchOpts.headers[h.key] = h.value ?? ''; }
-
-      if(method==='GET'){
-        const params = new URLSearchParams();
-        if(!s.response.responseOnly){
-          for(const f of s.fields){
-            if(f.type==='file') continue;
-            const el = form.querySelector(`[name='${CSS.escape(f.name)}']`);
-            if(!el) continue;
-            if(f.type==='checkbox') params.append(f.name, el.checked?'true':'false');
-            else params.append(f.name, el.value ?? '');
-          }
-        }
-        // warn if files selected on GET
-        const anyGetFile = !!$$("input[type='file']", form).find(i=> i.files && i.files.length);
-        if(anyGetFile) toast('GET request: file inputs will be ignored.', 'warning');
-        fetchUrl += (fetchUrl.includes('?')?'&':'?') + params.toString();
-      } else {
-        if(hasFile || !s.sendAsJson){
-          const fd = new FormData();
-          if(!s.response.responseOnly){
-            for(const f of s.fields){
-              const el = form.querySelector(`[name='${CSS.escape(f.name)}']`);
-              if(!el) continue;
-              if(f.type==='file'){ if(el.files && el.files.length) fd.append(f.name, el.files[0]); }
-              else if(f.type==='checkbox'){ fd.append(f.name, el.checked?'true':'false'); }
-              else { fd.append(f.name, el.value ?? ''); }
-            }
-          }
-          // Ensure we don't override browser-generated boundary
-          if(fetchOpts.headers['Content-Type']) delete fetchOpts.headers['Content-Type'];
-          fetchOpts.body = fd;
-        } else {
-          const obj = {};
-          if(!s.response.responseOnly){
-            for(const f of s.fields){
-              const el = form.querySelector(`[name='${CSS.escape(f.name)}']`);
-              if(!el || f.type==='file') continue;
-              obj[f.name] = (f.type==='checkbox') ? !!el.checked : (el.value ?? '');
-            }
-          }
-          fetchOpts.headers['Content-Type'] = 'application/json';
-          fetchOpts.body = JSON.stringify(obj);
-        }
-      }
-
-      respRoot.classList.remove('text-secondary');
-      respRoot.innerHTML = `<div class='form-chip'>Sending… Please wait.</div>`;
-
-      try{
-        const res = await fetch(fetchUrl, fetchOpts);
-        const ct = (res.headers.get('content-type')||'').toLowerCase();
-        let mode = s.response.mode;
-        if(mode==='auto'){ mode = ct.includes('json') ? 'json' : (ct.startsWith('text/') ? 'text' : 'raw'); }
-
-        let detailHtml = '';
-        let msg = res.ok ? 'Success' : `HTTP ${res.status}`;
-        let rawData;
-        if(mode==='json'){
-          try{ rawData = await res.json(); }catch{ rawData = { error: 'Invalid JSON body' }; }
-          const pretty = esc(JSON.stringify(rawData, null, 2));
-          detailHtml = `<pre class="small mb-0">${pretty}</pre>`;
-          if(s.response.extractPath){
-            const val = getByPath(rawData, s.response.extractPath);
-            if(val!==undefined) msg = `${s.response.extractPath}: ${typeof val==='object'? esc(JSON.stringify(val)): esc(String(val))}`;
-          }
-        } else if(mode==='text'){
-          const t = await res.text(); rawData = t; detailHtml = `<pre class="small mb-0">${esc(t)}</pre>`;
-        } else { // raw
-          const blob = await res.blob(); rawData = blob; const url = URL.createObjectURL(blob);
-          detailHtml = `<div class='small'>Received <b>${esc(ct||'binary')}</b> (${blob.size.toLocaleString()} bytes). <a href="${url}" download="response">Download</a></div>`;
-        }
-
-        const alertType = res.ok ? 'success' : 'warning';
-        const msgOnly = !!s.response.showMessageOnly;
-        respRoot.innerHTML = `
-          <div class="alert alert-${alertType} py-2 px-3 mb-2">${esc(msg)}</div>
-          ${msgOnly ? '' : `<div class="p-2" style="background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:12px; max-height:48vh; overflow:auto;">${detailHtml}</div>`}
-          <div class="mt-2 d-flex gap-2">
-            <button class="btn btn-soft btn-sm" id="whClear"><i data-lucide="rotate-ccw"></i> Clear</button>
-          </div>
-        `;
-        lucide.createIcons();
-        $('#whClear', respRoot).addEventListener('click', ()=>{ respRoot.classList.add('text-secondary'); respRoot.innerHTML = 'No response yet.'; fitCanvasHeight(); });
-        toast(res.ok ? 'Webhook succeeded.' : `Webhook returned ${res.status}`, alertType);
-      }catch(err){
-        respRoot.innerHTML = `<div class='alert alert-danger py-2 px-3'>${esc(err.message)}<br/>Likely a network or CORS error. Ensure your n8n HTTP Response includes <code>Access-Control-Allow-Origin: *</code> and <code>Access-Control-Allow-Headers</code>.</div>`;
-        toast('Network/CORS error when calling webhook.', 'danger');
-      }finally{
-        btn.disabled = false; spin.remove(); fitCanvasHeight();
-      }
-    }
-
-    // ---------- CONFIG VIEW (inline drawer with field builder + headers + response prefs)
-    function renderConfig(){
-      const s = state;
-      cfgRoot.innerHTML = `
-        <form id="cfgForm" class="row g-2">
-          <div class="col-12 d-flex justify-content-between align-items-center">
-            <div class="fw-bold">Configure Webhook</div>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-soft btn-sm" data-act="close"><i data-lucide="x"></i> Close</button>
-              <button type="submit" class="btn btn-accent btn-sm"><i data-lucide="save"></i> Save</button>
-            </div>
-          </div>
-          <div class="col-md-8">
-            <label class="form-label small">Webhook URL</label>
-            <input data-cfg="url" class="form-control form-control-sm" placeholder="https://your-n8n/webhook/..." value="${esc(s.url)}" />
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">Method</label>
-            <select data-cfg="method" class="form-select form-select-sm">
-              <option ${s.method==='POST'?'selected':''}>POST</option>
-              <option ${s.method==='GET'?'selected':''}>GET</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small">POST Body</label>
-            <select data-cfg="body" class="form-select form-select-sm">
-              <option value="auto" ${!s.sendAsJson?'selected':''}>Auto</option>
-              <option value="json" ${s.sendAsJson?'selected':''}>JSON</option>
-            </select>
-          </div>
-
-          <div class="col-12 mt-1"><div class="divider"></div></div>
-
-          <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="small text-secondary">Headers</div>
-              <button class="btn btn-soft btn-sm" type="button" data-act="add-header"><i data-lucide="plus"></i> Add Header</button>
-            </div>
-            <div id="hdrList" class="mt-1">
-              ${(s.headers||[]).map(h=> headerRow(h)).join('') || `<div class='text-secondary small'>No headers set.</div>`}
-            </div>
-          </div>
-
-          <div class="col-12 mt-1"><div class="divider"></div></div>
-
-          <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="small text-secondary">Fields (form inputs)</div>
-              <div class="d-flex gap-2">
-                <select id="addType" class="form-select form-select-sm" style="width:auto">
-                  <option value="text">Text</option>
-                  <option value="number">Number</option>
-                  <option value="textarea">Textarea</option>
-                  <option value="checkbox">Checkbox</option>
-                  <option value="select">Select</option>
-                  <option value="file">File</option>
-                </select>
-                <button type="button" class="btn btn-accent btn-sm" data-act="add-field"><i data-lucide="plus"></i> Add Field</button>
-              </div>
-            </div>
-            <div id="fieldList" class="mt-2">
-              ${s.fields.map((f,i)=> fieldRow(f,i)).join('') || `<div class='text-secondary small'>No fields yet. Add one above.</div>`}
-            </div>
-          </div>
-
-          <div class="col-12 mt-1"><div class="divider"></div></div>
-
-          <div class="col-12">
-            <div class="row g-2">
-              <div class="col-md-3">
-                <label class="form-label small">Response Mode</label>
-                <select data-cfg="resp-mode" class="form-select form-select-sm">
-                  <option value="auto" ${s.response.mode==='auto'?'selected':''}>Auto</option>
-                  <option value="json" ${s.response.mode==='json'?'selected':''}>JSON</option>
-                  <option value="text" ${s.response.mode==='text'?'selected':''}>Text</option>
-                  <option value="raw" ${s.response.mode==='raw'?'selected':''}>Raw/Binary</option>
-                </select>
-              </div>
-              <div class="col-md-5">
-                <label class="form-label small">Extract JSON path (for small message)</label>
-                <input data-cfg="resp-path" class="form-control form-control-sm" placeholder="e.g. data.total" value="${esc(s.response.extractPath||'')}" />
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small">Message only</label><br>
-                <input type="checkbox" data-cfg="resp-msg-only" class="form-check-input mt-2" ${s.response.showMessageOnly?'checked':''} />
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small">Response only</label><br>
-                <input type="checkbox" data-cfg="resp-only" class="form-check-input mt-2" ${s.response.responseOnly?'checked':''} />
-              </div>
-              <div class="col-md-4">
-                <label class="form-label small">Run button label</label>
-                <input data-cfg="resp-run-label" class="form-control form-control-sm" value="${esc(s.response.runButtonLabel||'Run')}" />
-              </div>
-            </div>
-          </div>
-        </form>
-      `;
-      lucide.createIcons();
-
-      // Delegated config events
-      cfgRoot.addEventListener('input', onCfgInput);
-      cfgRoot.addEventListener('click', onCfgClick);
-      $('#cfgForm', cfgRoot).addEventListener('submit', (e)=>{ e.preventDefault(); save(); renderRun(); toast('Saved.', 'success'); fitCanvasHeight(); });
-      fitCanvasHeight();
-    }
-
-    function headerRow(h){
-      const id = esc(h.id||uid()); if(!h.id) h.id=id;
-      return `<div class="row g-2 align-items-end mb-1" data-hrow="${id}">
-        <div class="col-md-5"><input class="form-control form-control-sm" data-h="key" placeholder="Header name" value="${esc(h.key||'')}" /></div>
-        <div class="col-md-5"><input class="form-control form-control-sm" data-h="val" placeholder="Header value" value="${esc(h.value||'')}" /></div>
-        <div class="col-md-2 d-flex justify-content-end"><button type="button" class="btn btn-soft btn-sm" data-act="del-header"><i data-lucide="trash"></i></button></div>
-      </div>`;
-    }
-
-    function fieldRow(f,i){
-      return `<div class="row g-2 align-items-end mb-2" data-row="${esc(f.id)}" style="border:1px dashed var(--line); border-radius:12px; padding:8px;">
+/* ========== Config forms (unchanged from v2 but used in overlay) ========== */
+function identityFields(cfg){
+  return `
+    <div class="row g-2">
+      <div class="col-md-4"><label class="form-label small">Icon (lucide)</label><input class="form-control form-control-sm" data-cfg="icon" value="${esc(cfg.icon)}" placeholder="e.g. dollar-sign"/></div>
+      <div class="col-md-6"><label class="form-label small">Title</label><input class="form-control form-control-sm" data-cfg="title" value="${esc(cfg.title)}"/></div>
+      <div class="col-md-2"><label class="form-label small">Badge</label><select class="form-select form-select-sm" data-cfg="typeLabel"><option ${cfg.typeLabel==='Data'?'selected':''}>Data</option><option ${cfg.typeLabel==='App'?'selected':''}>App</option></select></div>
+    </div>`;
+}
+function n8nFields(cfg){
+  const n=cfg.n8n;
+  return `
+    <div class="row g-2 mt-2">
+      <div class="col-md-8"><label class="form-label small">Webhook URL</label><input class="form-control form-control-sm" data-cfg="url" value="${esc(n.url||'')}" placeholder="https://your-n8n/webhook/..."/></div>
+      <div class="col-md-2"><label class="form-label small">Method</label><select class="form-select form-select-sm" data-cfg="method"><option ${n.method==='POST'?'selected':''}>POST</option><option ${n.method==='GET'?'selected':''}>GET</option></select></div>
+      <div class="col-md-2"><label class="form-label small">POST Body</label><select class="form-select form-select-sm" data-cfg="sendAsJson"><option value="auto" ${!n.sendAsJson?'selected':''}>Auto</option><option value="json" ${n.sendAsJson?'selected':''}>JSON</option></select></div>
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <div class="small text-secondary">Headers</div>
+          <button type="button" class="btn btn-soft btn-sm" data-act="add-header"><i data-lucide="plus"></i> Add Header</button>
+        </div>
+        <div id="hdrList">${(n.headers||[]).map(h=>`
+          <div class="row g-2 align-items-end mb-1" data-hrow="${esc(h.id)}">
+            <div class="col-md-5"><input class="form-control form-control-sm" data-h="key" placeholder="Header name" value="${esc(h.key||'')}" /></div>
+            <div class="col-md-5"><input class="form-control form-control-sm" data-h="val" placeholder="Header value" value="${esc(h.value||'')}" /></div>
+            <div class="col-md-2 d-flex justify-content-end"><button type="button" class="btn btn-soft btn-sm" data-act="del-header"><i data-lucide="trash"></i></button></div>
+          </div>`).join('') || `<div class="text-secondary small">No headers set.</div>`}
+        </div>
+      </div>
+    </div>
+    <div class="cfg-help mt-2">
+      <details>
+        <summary class="text-secondary">n8n — HTTP Response setup (click)</summary>
+        <pre>
+Use an <b>HTTP Response</b> node as the last step:
+- Status: 200
+- Headers:
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Headers: *
+  Access-Control-Allow-Methods: GET,POST,OPTIONS
+- Response Body: (JSON examples below per widget type)
+        </pre>
+      </details>
+    </div>`;
+}
+function dataConfigForm(cfg){
+  const ds=cfg.dataSpec;
+  return `
+    <form class="wcfg" autocomplete="off">
+      ${identityFields(cfg)}
+      ${n8nFields(cfg)}
+      <div class="divider"></div>
+      <div class="row g-2">
         <div class="col-md-3">
-          <label class="form-label small">Type</label>
-          <select class="form-select form-select-sm" data-edit="type">
-            ${['text','number','textarea','checkbox','select','file'].map(t=>`<option value="${t}" ${f.type===t?'selected':''}>${cap(t)}</option>`).join('')}
+          <label class="form-label small">Data Mode</label>
+          <select class="form-select form-select-sm" data-cfg="dataMode">
+            <option value="kpi" ${ds.mode!=='list'?'selected':''}>KPI (Value1/Value2 + optional link)</option>
+            <option value="list" ${ds.mode==='list'?'selected':''}>Link List (title + url)</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label small">Label</label>
-          <input class="form-control form-control-sm" data-edit="label" value="${esc(f.label||'')}" />
-        </div>
-        <div class="col-md-3">
-          <label class="form-label small">Name</label>
-          <input class="form-control form-control-sm" data-edit="name" value="${esc(f.name||'')}" />
-        </div>
-        <div class="col-md-2 form-check mt-4">
-          <input class="form-check-input" type="checkbox" data-edit="req" id="req_${esc(f.id)}" ${f.required?'checked':''}>
-          <label for="req_${esc(f.id)}" class="form-check-label small">Required</label>
-        </div>
-        <div class="col-md-6 ${f.type==='select'?'':'d-none'}">
-          <label class="form-label small">Select options (comma-separated)</label>
-          <input class="form-control form-control-sm" data-edit="options" value="${esc((f.options||[]).join(', '))}" />
-        </div>
-        <div class="col-md-3 ${['text','number','textarea'].includes(f.type)?'':'d-none'}">
-          <label class="form-label small">Placeholder</label>
-          <input class="form-control form-control-sm" data-edit="ph" value="${esc(f.placeholder||'')}" />
-        </div>
-        <div class="col-md-3 ${f.type!=='checkbox'?'':'d-none'}">
-          <label class="form-label small">Default value</label>
-          <input class="form-control form-control-sm" data-edit="def" value="${esc(f.defaultValue||'')}" />
-        </div>
-        <div class="col-md-3 ${f.type==='checkbox'?'':'d-none'}">
-          <label class="form-label small">Checked by default</label><br>
-          <input type="checkbox" class="form-check-input mt-2" data-edit="defcheck" ${f.defaultValue? 'checked':''} />
-        </div>
-        <div class="col-md-2 d-flex justify-content-end">
-          <button type="button" class="btn btn-soft btn-sm" data-act="del-field"><i data-lucide="trash"></i></button>
-        </div>
-      </div>`;
-    }
+        <div class="col-md-3"><label class="form-label small">Run Label</label><input class="form-control form-control-sm" data-cfg="runLabel" value="${esc(cfg.runLabel||'Refresh')}"/></div>
+        <div class="col-md-6"><label class="form-label small">Subtitle</label><input class="form-control form-control-sm" data-cfg="subtitle" value="${esc(cfg.subtitle||'Updated just now')}"/></div>
+      </div>
 
-    function onCfgInput(e){
-      const t = e.target; const s = state;
-      // Top-level
-      if(t.matches('[data-cfg="url"]')) s.url = t.value.trim();
-      if(t.matches('[data-cfg="method"]')) s.method = t.value;
-      if(t.matches('[data-cfg="body"]')) s.sendAsJson = (t.value==='json');
-      if(t.matches('[data-cfg="resp-mode"]')) s.response.mode = t.value;
-      if(t.matches('[data-cfg="resp-path"]')) s.response.extractPath = t.value;
-      if(t.matches('[data-cfg="resp-run-label"]')) s.response.runButtonLabel = t.value;
-      if(t.matches('[data-cfg="resp-msg-only"]')) s.response.showMessageOnly = t.checked;
-      if(t.matches('[data-cfg="resp-only"]')) s.response.responseOnly = t.checked;
+      <div class="row g-2 mt-1 ${ds.mode==='list'?'d-none':''}" data-map="kpi">
+        <div class="col-md-4"><label class="form-label small">value1 path</label><input class="form-control form-control-sm" data-cfg="value1Path" value="${esc(ds.value1Path||'value1')}" /></div>
+        <div class="col-md-4"><label class="form-label small">value2 path</label><input class="form-control form-control-sm" data-cfg="value2Path" value="${esc(ds.value2Path||'value2')}" /></div>
+        <div class="col-md-4"><label class="form-label small">value3Url path</label><input class="form-control form-control-sm" data-cfg="value3UrlPath" value="${esc(ds.value3UrlPath||'value3Url')}" /></div>
+      </div>
 
-      // Headers
+      <div class="row g-2 mt-1 ${ds.mode==='list'?'':'d-none'}" data-map="list">
+        <div class="col-md-4"><label class="form-label small">list path</label><input class="form-control form-control-sm" data-cfg="listPath" value="${esc(ds.listPath||'items')}" /></div>
+        <div class="col-md-4"><label class="form-label small">item label path</label><input class="form-control form-control-sm" data-cfg="itemLabelPath" value="${esc(ds.itemLabelPath||'title')}" /></div>
+        <div class="col-md-4"><label class="form-label small">item url path</label><input class="form-control form-control-sm" data-cfg="itemUrlPath" value="${esc(ds.itemUrlPath||'url')}" /></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="cfg-help">
+        <details open>
+          <summary><b>Expected JSON from n8n</b></summary>
+          <pre>
+KPI:
+{
+  "value1": "$82,440",
+  "value2": "+4.3%",
+  "value3Url": "https://finance.yahoo.com"   // optional (makes Value1 clickable)
+}
+
+Link list:
+{
+  "items": [
+    { "title": "Headline A", "url": "https://..." },
+    { "title": "Headline B", "url": "https://..." }
+  ]
+}
+          </pre>
+        </details>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-2">
+        <button type="button" class="btn btn-soft btn-sm" data-act="close"><i data-lucide="x"></i> Close</button>
+        <button type="submit" class="btn btn-accent btn-sm"><i data-lucide="save"></i> Save</button>
+      </div>
+    </form>`;
+}
+function chartConfigForm(cfg){
+  const cs=cfg.chartSpec;
+  return `
+    <form class="wcfg" autocomplete="off">
+      ${identityFields(cfg)}
+      ${n8nFields(cfg)}
+      <div class="divider"></div>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label small">Chart Style</label>
+          <select class="form-select form-select-sm" data-cfg="chartStyle">
+            <option value="line" ${cs.style==='line'?'selected':''}>Line (Revenue 30d)</option>
+            <option value="bar" ${cs.style==='bar'?'selected':''}>Bar (Traffic 7d)</option>
+            <option value="pie" ${cs.style==='pie'?'selected':''}>Pie</option>
+          </select>
+        </div>
+        <div class="col-md-3"><label class="form-label small">Run Label</label><input class="form-control form-control-sm" data-cfg="runLabel" value="${esc(cfg.runLabel||'Refresh')}"/></div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-4"><label class="form-label small">labels path</label><input class="form-control form-control-sm" data-cfg="labelsPath" value="${esc(cs.labelsPath|| (cs.style==='bar'?'labels':'xLabels'))}" /></div>
+        <div class="col-md-4"><label class="form-label small">${cs.style==='pie'?'values':'data'} path</label><input class="form-control form-control-sm" data-cfg="dataPath" value="${esc(cs.dataPath|| (cs.style==='pie'?'values':'series[0].data'))}" /></div>
+        <div class="col-md-4 ${cs.style==='pie'?'d-none':''}"><label class="form-label small">dataset label</label><input class="form-control form-control-sm" data-cfg="datasetLabel" value="${esc(cs.datasetLabel||'Series')}" /></div>
+        <div class="col-md-4"><label class="form-label small">yMax path (optional)</label><input class="form-control form-control-sm" data-cfg="yMaxPath" value="${esc(cs.yMaxPath||'yMax')}" /></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="cfg-help">
+        <details open>
+          <summary><b>Expected JSON from n8n</b> (examples)</summary>
+          <pre>
+Line (30d revenue):
+{
+  "title": "Revenue (30 days)",
+  "yMax": 12000,
+  "xLabels": ["2025-07-12","2025-07-13",...],
+  "series": [ { "label":"Revenue", "data":[9340,9520,...] } ]
+}
+
+Bar (7d traffic):
+{
+  "labels": ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+  "data": [530,610,580,740,890,660,720],
+  "yMax": 1000
+}
+
+Pie:
+{
+  "labels": ["Organic","Paid","Referral"],
+  "values": [42,35,23]
+}
+          </pre>
+        </details>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-2">
+        <button type="button" class="btn btn-soft btn-sm" data-act="close"><i data-lucide="x"></i> Close</button>
+        <button type="submit" class="btn btn-accent btn-sm"><i data-lucide="save"></i> Save</button>
+      </div>
+    </form>`;
+}
+function customConfigForm(cfg){
+  const cs=cfg.customSpec;
+  return `
+    <form class="wcfg" autocomplete="off">
+      ${identityFields(cfg)}
+      ${n8nFields(cfg)}
+      <div class="divider"></div>
+      <div class="row g-2">
+        <div class="col-md-3"><label class="form-label small">Run Label</label><input class="form-control form-control-sm" data-cfg="runLabel" value="${esc(cfg.runLabel||'Run')}"/></div>
+        <div class="col-md-3"><label class="form-label small">Response only</label><br><input type="checkbox" class="form-check-input mt-2" data-cfg="responseOnly" ${cs.responseOnly?'checked':''}/></div>
+      </div>
+      <div class="divider"></div>
+      <div class="small text-secondary mb-1">Fields</div>
+      <div id="fieldList">
+        ${(cs.fields||[]).map(f=> `
+        <div class="row g-2 align-items-end mb-2" data-row="${esc(f.id)}" style="border:1px dashed var(--line);border-radius:12px;padding:8px;">
+          <div class="col-md-3"><select class="form-select form-select-sm" data-edit="type">
+            ${['text','number','textarea','checkbox','select','file'].map(t=>`<option value="${t}" ${f.type===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+          <div class="col-md-3"><input class="form-control form-control-sm" data-edit="name" placeholder="name" value="${esc(f.name||'field')}"/></div>
+          <div class="col-md-4 ${f.type==='select'?'':'d-none'}"><input class="form-control form-control-sm" data-edit="options" placeholder="opt1, opt2" value="${esc((f.options||[]).join(', '))}"/></div>
+          <div class="col-md-2 d-flex justify-content-end"><button type="button" class="btn btn-soft btn-sm" data-act="del-field"><i data-lucide="trash"></i></button></div>
+        </div>`).join('')}
+      </div>
+      <div class="d-flex gap-2">
+        <select id="addType" class="form-select form-select-sm" style="width:auto">
+          <option value="text">text</option><option value="number">number</option><option value="textarea">textarea</option><option value="checkbox">checkbox</option><option value="select">select</option><option value="file">file</option>
+        </select>
+        <button type="button" class="btn btn-accent btn-sm" data-act="add-field"><i data-lucide="plus"></i> Add Field</button>
+      </div>
+
+      <div class="cfg-help mt-2">
+        <details>
+          <summary class="text-secondary">Example n8n: echo posted fields</summary>
+          <pre>
+// In Function node:
+return [{ json: $json }];
+
+// In HTTP Response:
+Status 200, Content-Type application/json, Body: {{$json}}
+          </pre>
+        </details>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-2">
+        <button type="button" class="btn btn-soft btn-sm" data-act="close"><i data-lucide="x"></i> Close</button>
+        <button type="submit" class="btn btn-accent btn-sm"><i data-lucide="save"></i> Save</button>
+      </div>
+    </form>`;
+}
+
+/* ========== Config attach (overlay-powered) ========== */
+function attachConfig(panel, cfg, kind){
+  const header = panel.querySelector('.head');
+
+  function rerenderHeader(){
+    header.querySelector('.title .icon').innerHTML = `<i data-lucide="${esc(cfg.icon)}"></i>`;
+    header.querySelector('.w-title').textContent = cfg.title;
+    header.querySelector('.badge-main').textContent = cfg.typeLabel;
+    lucide.createIcons();
+  }
+
+  // Open overlay
+  header.querySelector('.btn-config').onclick = ()=>{
+    const formHtml = kind==='data'? dataConfigForm(cfg) : kind==='chart'? chartConfigForm(cfg) : customConfigForm(cfg);
+    openOverlay(`Configure: ${cfg.title}`, formHtml);
+    bindOverlayEvents();
+  };
+
+  function bindOverlayEvents(){
+    const pane = $('#nd-pane');
+    pane.addEventListener('input', (e)=>{
+      const t=e.target;
+      if(t.matches('[data-cfg="icon"]')){ cfg.icon=t.value.trim()||'box'; rerenderHeader(); }
+      if(t.matches('[data-cfg="title"]')){ cfg.title=t.value; rerenderHeader(); }
+      if(t.matches('[data-cfg="typeLabel"]')){ cfg.typeLabel=t.value; rerenderHeader(); }
+
+      if(t.matches('[data-cfg="url"]')) cfg.n8n.url=t.value.trim();
+      if(t.matches('[data-cfg="method"]')) cfg.n8n.method=t.value;
+      if(t.matches('[data-cfg="sendAsJson"]')) cfg.n8n.sendAsJson=(t.value==='json');
+
+      if(kind==='data'){
+        if(t.matches('[data-cfg="dataMode"]')){ cfg.dataSpec.mode=t.value; openOverlay(`Configure: ${cfg.title}`, dataConfigForm(cfg)); bindOverlayEvents(); return; }
+        if(t.matches('[data-cfg="runLabel"]')) cfg.runLabel=t.value;
+        if(t.matches('[data-cfg="subtitle"]')) cfg.subtitle=t.value;
+        if(t.matches('[data-cfg="value1Path"]')) cfg.dataSpec.value1Path=t.value;
+        if(t.matches('[data-cfg="value2Path"]')) cfg.dataSpec.value2Path=t.value;
+        if(t.matches('[data-cfg="value3UrlPath"]')) cfg.dataSpec.value3UrlPath=t.value;
+        if(t.matches('[data-cfg="listPath"]')) cfg.dataSpec.listPath=t.value;
+        if(t.matches('[data-cfg="itemLabelPath"]')) cfg.dataSpec.itemLabelPath=t.value;
+        if(t.matches('[data-cfg="itemUrlPath"]')) cfg.dataSpec.itemUrlPath=t.value;
+      }
+
+      if(kind==='chart'){
+        if(t.matches('[data-cfg="chartStyle"]')){ cfg.chartSpec.style=t.value; openOverlay(`Configure: ${cfg.title}`, chartConfigForm(cfg)); bindOverlayEvents(); return; }
+        if(t.matches('[data-cfg="runLabel"]')) cfg.runLabel=t.value;
+        if(t.matches('[data-cfg="labelsPath"]')) cfg.chartSpec.labelsPath=t.value;
+        if(t.matches('[data-cfg="dataPath"]')) cfg.chartSpec.dataPath=t.value;
+        if(t.matches('[data-cfg="datasetLabel"]')) cfg.chartSpec.datasetLabel=t.value;
+        if(t.matches('[data-cfg="yMaxPath"]')) cfg.chartSpec.yMaxPath=t.value;
+      }
+
+      if(kind==='custom'){
+        if(t.matches('[data-cfg="runLabel"]')) cfg.runLabel=t.value;
+        if(t.matches('[data-cfg="responseOnly"]')) cfg.customSpec.responseOnly = t.checked;
+        if(t.closest('[data-row]')){
+          const row=t.closest('[data-row]'); const id=row.getAttribute('data-row');
+          const f = cfg.customSpec.fields.find(x=>x.id===id); if(!f) return;
+          if(t.matches('[data-edit="type"]')){ f.type=t.value; openOverlay(`Configure: ${cfg.title}`, customConfigForm(cfg)); bindOverlayEvents(); return; }
+          if(t.matches('[data-edit="name"]')) f.name=t.value;
+          if(t.matches('[data-edit="options"]')) f.options=t.value.split(',').map(x=>x.trim()).filter(Boolean);
+        }
+      }
+
+      // headers
       if(t.closest('[data-hrow]')){
-        const row = t.closest('[data-hrow]'); const id = row.getAttribute('data-hrow');
-        const h = (state.headers||[]).find(x=>x.id===id);
-        if(!h) return; if(t.matches('[data-h="key"]')) h.key = t.value; if(t.matches('[data-h="val"]')) h.value = t.value;
+        const row=t.closest('[data-hrow]'); const id=row.getAttribute('data-hrow');
+        const h=(cfg.n8n.headers||[]).find(x=>x.id===id);
+        if(!h) return; if(t.matches('[data-h="key"]')) h.key=t.value; if(t.matches('[data-h="val"]')) h.value=t.value;
       }
 
-      // Fields
-      if(t.closest('[data-row]')){
-        const row = t.closest('[data-row]'); const id = row.getAttribute('data-row');
-        const f = state.fields.find(x=>x.id===id); if(!f) return;
-        if(t.matches('[data-edit="type"]')){ f.type = t.value; if(f.type==='select' && !f.options) f.options=['Option A','Option B']; renderConfig(); }
-        if(t.matches('[data-edit="label"]')) f.label = t.value;
-        if(t.matches('[data-edit="name"]')) f.name = t.value;
-        if(t.matches('[data-edit="req"]')) f.required = t.checked;
-        if(t.matches('[data-edit="options"]')) f.options = t.value.split(',').map(x=>x.trim()).filter(Boolean);
-        if(t.matches('[data-edit="ph"]')) f.placeholder = t.value;
-        if(t.matches('[data-edit="def"]')) f.defaultValue = t.value;
-        if(t.matches('[data-edit="defcheck"]')) f.defaultValue = t.checked;
-      }
+      const all=store.load(); all[cfg.id]=cfg; store.save(all);
+    });
 
-      save();
-      fitCanvasHeight();
-    }
+    pane.addEventListener('click', (e)=>{
+      const b=e.target.closest('[data-act]'); if(!b) return; const act=b.getAttribute('data-act');
+      if(act==='close'){ closeOverlay(); }
+      if(act==='add-header'){ cfg.n8n.headers=cfg.n8n.headers||[]; cfg.n8n.headers.push({id:uid(),key:'',value:''}); openOverlay(`Configure: ${cfg.title}`, (kind==='data'?dataConfigForm:kind==='chart'?chartConfigForm:customConfigForm)(cfg)); bindOverlayEvents(); }
+      if(act==='del-header'){ const row=b.closest('[data-hrow]'); const id=row.getAttribute('data-hrow'); cfg.n8n.headers=(cfg.n8n.headers||[]).filter(h=>h.id!==id); openOverlay(`Configure: ${cfg.title}`, (kind==='data'?dataConfigForm:kind==='chart'?chartConfigForm:customConfigForm)(cfg)); bindOverlayEvents(); }
+      if(act==='add-field'){ const type=$('#addType',pane).value; cfg.customSpec.fields=cfg.customSpec.fields||[]; cfg.customSpec.fields.push({id:uid(),type,name:`${type}_${cfg.customSpec.fields.length+1}`}); openOverlay(`Configure: ${cfg.title}`, customConfigForm(cfg)); bindOverlayEvents(); }
+      if(act==='del-field'){ const row=b.closest('[data-row]'); const id=row.getAttribute('data-row'); cfg.customSpec.fields=cfg.customSpec.fields.filter(f=>f.id!==id); openOverlay(`Configure: ${cfg.title}`, customConfigForm(cfg)); bindOverlayEvents(); }
+    });
 
-    function onCfgClick(e){
-      const btn = e.target.closest('[data-act]'); if(!btn) return; const act = btn.getAttribute('data-act');
-      if(act==='close'){ cfgRoot.classList.add('d-none'); fitCanvasHeight(); return; }
-      if(act==='add-header'){
-        state.headers = state.headers||[]; state.headers.push({ id: uid(), key:'', value:'' }); renderConfig(); save(); return;
-      }
-      if(act==='del-header'){
-        const row = btn.closest('[data-hrow]'); const id=row.getAttribute('data-hrow'); state.headers = (state.headers||[]).filter(h=>h.id!==id); renderConfig(); save(); return;
-      }
-      if(act==='add-field'){
-        const type = $('#addType', cfgRoot).value;
-        const idx = state.fields.length+1;
-        const f = { id: uid(), type, label: cap(type)+' Field', name: `${type}_${idx}`, required:false };
-        if(type==='select') f.options=['Option A','Option B'];
-        state.fields.push(f); renderConfig(); save(); return;
-      }
-      if(act==='del-field'){
-        const row = btn.closest('[data-row]'); const id=row.getAttribute('data-row'); state.fields = state.fields.filter(f=>f.id!==id); renderConfig(); save(); return;
-      }
-    }
+    pane.addEventListener('submit', (e)=>{
+      if(e.target.matches('.wcfg')){ e.preventDefault(); store.set(cfg.id,cfg); toast('Saved.','success'); closeOverlay(); rerenderPanel(panel, cfg); }
+    });
+  }
 
-    function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  // Titlebar refresh
+  const refreshBtn = header.querySelector('.btn-refresh');
+  if(refreshBtn){
+    refreshBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      // Trigger the proper runner depending on kind
+      if(cfg.kind==='data'){
+        // simulate click handled in renderDataWidget
+        panel.querySelector('.btn-refresh').dispatchEvent(new Event('click'));
+      }else if(cfg.kind==='chart'){
+        panel.querySelector('.btn-refresh').dispatchEvent(new Event('click'));
+      }
+    });
+  }
+}
 
-    // Initial render
-    renderRun();
+/* ========== Panel (re)render ========== */
+function rerenderPanel(panel, cfg){
+  panel.innerHTML = headerTemplate(cfg) + bodyShell();
+  lucide.createIcons();
+  if(cfg.kind==='data') renderDataWidget(panel,cfg);
+  if(cfg.kind==='chart') renderChartWidget(panel,cfg);
+  if(cfg.kind==='custom') renderCustomWidget(panel,cfg);
+  fitCanvasHeight();
+}
 
-  })();
+/* ========== Init panels ========== */
+function initPanel(panel){
+  const id = panel.dataset.id;
+  const kind = panel.dataset.kind;
+  const saved = store.get(id);
+
+  const defaults = {
+    id, kind,
+    icon: 'box',
+    title: (()=>{
+      if(id==='kpi-revenue') return 'Revenue (MRR)';
+      if(id==='kpi-subs') return 'YouTube Subscribers';
+      if(id==='list-links') return 'Latest Headlines';
+      if(id==='chart-revenue') return 'Revenue (30 days)';
+      if(id==='chart-traffic') return 'Traffic (7 days)';
+      if(id==='chart-pie') return 'Market Share';
+      if(id==='app-blog') return 'Blog Generator';
+      if(id==='app-webhook') return 'Webhook App';
+      return 'Widget';
+    })(),
+    typeLabel: (kind==='custom')?'App':'Data',
+    runLabel: (kind==='custom')?'Run':'Refresh',
+    n8n: { url:'', method:'POST', sendAsJson:false, headers:[] },
+    dataSpec: kind==='data'? {
+      mode: (id==='list-links')?'list':'kpi',
+      value1Path:'value1', value2Path:'value2', value3UrlPath:'value3Url',
+      listPath:'items', itemLabelPath:'title', itemUrlPath:'url',
+      demoV1: (id==='kpi-revenue')?'$82,440':(id==='kpi-subs')?'12,873':'—', demoV2:(id==='kpi-revenue')?'+4.3%':(id==='kpi-subs')?'+142':''
+    } : undefined,
+    chartSpec: kind==='chart'? {
+      style: (id==='chart-revenue')?'line':(id==='chart-traffic')?'bar':'pie',
+      labelsPath: (id==='chart-revenue')?'xLabels':'labels',
+      dataPath: (id==='chart-revenue')?'series[0].data':(id==='chart-traffic')?'data':'values',
+      datasetLabel: (id==='chart-revenue')?'Revenue':(id==='chart-traffic')?'Visits':'',
+      yMaxPath:'yMax'
+    } : undefined,
+    customSpec: kind==='custom'? {
+      responseOnly: false,
+      fields: (id==='app-blog')?[
+        {id:uid(),type:'text',name:'topic',placeholder:'Topic (e.g., AI for SMBs)'},
+        {id:uid(),type:'select',name:'tone',options:['Professional','Friendly','Playful']}
+      ]:[
+        {id:uid(),type:'text',name:'prompt',placeholder:'Enter prompt'},
+        {id:uid(),type:'file',name:'file'}
+      ]
+    }: undefined,
+    subtitle: ''
+  };
+
+  const cfg = saved ? Object.assign(defaults, saved) : defaults;
+  store.set(id, cfg);
+
+  panel.innerHTML = headerTemplate(cfg) + bodyShell();
+  lucide.createIcons();
+
+  if(kind==='data') renderDataWidget(panel, cfg);
+  if(kind==='chart') renderChartWidget(panel, cfg);
+  if(kind==='custom') renderCustomWidget(panel, cfg);
+}
+panels().forEach(initPanel);
+
+/* Global "Run Selected" */
+$('#btn-main').addEventListener('click', ()=>{
+  toast('Refreshing selected widgets…');
+  panels().filter(p=> p.dataset.main==='1').forEach(p=>{
+    const btn = p.querySelector('.btn-refresh') || p.querySelector('.btn-run');
+    if(btn){ btn.click(); }
+  });
+});
 </script>
 </body>
 </html>
