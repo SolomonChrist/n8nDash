@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>n8nDash v2 — All Widgets Configurable (v3)</title>
+  <title>n8nDash v2 — All Widgets Configurable (v3.1)</title>
   <!-- Fonts & CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
       /* Default theme (Ocean) */
       --accent:#0ea5e9; --accent-rgb:14,165,233;
     }
-    /* Theme presets (set --accent + rgb for soft UI) */
+    /* Themes */
     .theme-ocean{ --accent:#0ea5e9; --accent-rgb:14,165,233; }
     .theme-emerald{ --accent:#22c55e; --accent-rgb:34,197,94; }
     .theme-orchid{ --accent:#a855f7; --accent-rgb:168,85,247; }
@@ -40,7 +40,8 @@
     .header{grid-area:header;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
     .header .right{display:flex;align-items:center;gap:10px}
     .chip{border:1px solid var(--line);padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.03)}
-    .btn-soft{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);border-radius:12px}
+    .btn-soft{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);border-radius:12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .btn-soft i{width:16px;height:16px}
     .btn-soft:hover{background:rgba(255,255,255,.06)}
     .theme-dot{width:14px;height:14px;border-radius:999px;display:inline-block;margin-right:6px}
 
@@ -64,28 +65,36 @@
     .kpi{font-size:32px;font-weight:800}
     .delta.up{color:#22c55e}.delta.down{color:#ef4444}
 
-    /* Elegant accent buttons (soft, theme-aware) */
+    /* Accent buttons (theme aware) */
     .btn-accent{
       border:1px solid rgba(var(--accent-rgb), .45) !important;
       background:rgba(var(--accent-rgb), .16) !important;
       color:var(--text) !important;
       box-shadow:0 4px 18px rgba(var(--accent-rgb), .15) !important;
       transition:.15s ease;
+      display:inline-flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden;
     }
+    .btn-accent i{width:16px;height:16px}
     .btn-accent:hover{ background:rgba(var(--accent-rgb), .24) !important; border-color:rgba(var(--accent-rgb), .7) !important; }
     .btn-accent:disabled{ opacity:.75 }
 
-    /* Icon-only buttons (square) for header actions */
+    /* Icon-only (square) header buttons */
     .btn-icon{
-      width:32px; height:32px; padding:0; display:grid; place-items:center;
+      width:32px; height:32px; padding:0; display:inline-grid; place-items:center;
       border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text);
+      position:relative; overflow:hidden;
     }
     .btn-icon.accent{ border-color:rgba(var(--accent-rgb), .45); }
     .btn-icon:hover{ background:rgba(255,255,255,.06); }
     .btn-icon i{ width:16px; height:16px; }
 
     /* Slim pill for Custom widget run */
-    .btn-pill{ border-radius:999px; height:32px; padding:0 12px; font-size:13px; }
+    .btn-pill{ border-radius:999px; height:32px; padding:0 12px; font-size:13px; line-height:1; }
+
+    /* Spinners */
+    .btn-pill .spinner-border,
+    .btn-icon .spinner-border{ width:16px; height:16px; border-width:2px; }
+    .btn-icon .spinner-border{ position:relative; }
 
     /* Full-screen config overlay */
     .nd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow:auto}
@@ -127,7 +136,7 @@
           <li><a class="dropdown-item" data-theme="citrus" href="#"><span class="theme-dot" style="background:#f59e0b"></span> Citrus</a></li>
         </ul>
       </div>
-      <button id="btn-edit" class="btn btn-accent btn-pill">Edit Mode</button>
+      <button id="btn-edit" class="btn btn-accent btn-pill"><i data-lucide="edit-3"></i> Edit Mode</button>
       <button id="btn-main" class="btn btn-soft"><i data-lucide="refresh-ccw"></i> Run Selected</button>
       <button id="btn-save" class="btn btn-soft"><i data-lucide="save"></i> Save Layout</button>
       <button id="btn-reset" class="btn btn-soft"><i data-lucide="undo2"></i> Reset</button>
@@ -205,20 +214,19 @@ const ro=new ResizeObserver(()=> fitCanvasHeight());
 function observe(){ panels().forEach(p=> ro.observe(p)); }
 (function loadLayout(){
   const saved = JSON.parse(localStorage.getItem('nd.layout')||'null');
-  if(saved){
-    panels().forEach(p=>{ const s=saved[p.dataset.id]; if(s){ Object.assign(p.style,{left:s.left,top:s.top,width:s.width,height:s.height}); }});
-  }
+  if(saved){ panels().forEach(p=>{ const s=saved[p.dataset.id]; if(s){ Object.assign(p.style,{left:s.left,top:s.top,width:s.width,height:s.height}); }}); }
   fitCanvasHeight(); observe(); window.addEventListener('resize',fitCanvasHeight);
 })();
 $('#btn-save').addEventListener('click', ()=>{
   const out={}; panels().forEach(p=> out[p.dataset.id]={left:p.style.left,top:p.style.top,width:p.style.width,height:p.style.height});
   localStorage.setItem('nd.layout', JSON.stringify(out)); toast('Layout saved.','success');
 });
-$('#btn-reset').addEventListener('click', ()=>{ localStorage.removeItem('nd.layout'); localStorage.removeItem('nd.widgets.v3'); location.reload(); });
+$('#btn-reset').addEventListener('click', ()=>{ localStorage.removeItem('nd.layout'); localStorage.removeItem('nd.widgets.v3_1'); location.reload(); });
 $('#btn-edit').addEventListener('click', ()=>{
-  EDIT=!EDIT; $('#btn-edit').textContent = EDIT ? 'Editing… (Done)' : 'Edit Mode';
+  EDIT=!EDIT; $('#btn-edit').innerHTML = EDIT ? '<i data-lucide="check"></i> Done' : '<i data-lucide="edit-3"></i> Edit Mode';
   appRoot.classList.toggle('editing', EDIT);
   panels().forEach(p=> p.classList.toggle('ghost', EDIT));
+  lucide.createIcons();
 });
 interact('.panel').draggable({
   allowFrom: '.handle',
@@ -238,7 +246,7 @@ interact('.panel').draggable({
 });
 
 /* ========== Store ========== */
-const LS_WIDGETS='nd.widgets.v3';
+const LS_WIDGETS='nd.widgets.v3_1';
 const store = {
   load(){ try{ return JSON.parse(localStorage.getItem(LS_WIDGETS)||'{}'); }catch{return {}} },
   save(obj){ localStorage.setItem(LS_WIDGETS, JSON.stringify(obj)); },
@@ -273,9 +281,9 @@ function openOverlay(title, innerHTML){
 }
 function closeOverlay(){ if(!overlayEl) return; overlayEl.remove(); overlayEl=null; document.body.style.overflow=''; }
 
-/* ========== Headers / Shells ========== */
+/* ========== Header + shells ========== */
 function headerTemplate(cfg){
-  const isActionable = (cfg.kind==='data' || cfg.kind==='chart');
+  const actionable = (cfg.kind==='data' || cfg.kind==='chart');
   return `
   <div class="head">
     <div class="title">
@@ -284,7 +292,7 @@ function headerTemplate(cfg){
     </div>
     <div class="d-flex align-items-center gap-2">
       <span class="badge-main">${esc(cfg.typeLabel|| (cfg.kind==='custom'?'App':'Data'))}</span>
-      ${isActionable ? `<button class="btn btn-icon btn-refresh accent" title="Refresh"><i data-lucide="refresh-ccw"></i></button>`:''}
+      ${actionable ? `<button class="btn btn-icon btn-refresh accent" title="Refresh"><i data-lucide="refresh-ccw"></i></button>`:''}
       <button class="btn btn-icon btn-config" title="Configure"><i data-lucide="settings"></i></button>
       <span class="handle" title="Drag (Edit Mode)"><i data-lucide="move"></i></span>
     </div>
@@ -306,15 +314,36 @@ function setStatus(panel, msg){
   else{ div.classList.remove('d-none'); sep.classList.remove('d-none'); div.textContent=msg; }
 }
 
-/* ========== Common fetch helper ========== */
+/* ========== Button spinner helpers ========== */
+function spinRefresh(btn, on){
+  if(on){
+    const icon = btn.querySelector('i');
+    if(icon) icon.style.display='none';
+    let sp = btn.querySelector('.spinner-border');
+    if(!sp){ sp = document.createElement('span'); sp.className='spinner-border'; btn.appendChild(sp); }
+  }else{
+    const icon = btn.querySelector('i');
+    if(icon) icon.style.display='';
+    const sp = btn.querySelector('.spinner-border');
+    if(sp) sp.remove();
+  }
+}
+
+/* ========== Fetch helper ========== */
 async function fetchAndApply(panel, cfg, applyFn, formDataOverride){
   const statusSetter = (txt)=> setStatus(panel, txt);
   const btn = panel.querySelector('.btn-run') || panel.querySelector('.btn-refresh');
   if(!btn){ toast('No action button found.','warning'); return; }
-  btn.disabled=true; const spin=document.createElement('span'); spin.className='spinner-border spinner-border-sm ms-2'; if(btn.classList.contains('btn-run')) btn.appendChild(spin);
+
+  const isRefreshBtn = btn.classList.contains('btn-refresh');
+
+  btn.disabled=true;
+  let spinEl=null;
+  if(isRefreshBtn){ spinRefresh(btn, true); }
+  else{ spinEl=document.createElement('span'); spinEl.className='spinner-border spinner-border-sm'; btn.appendChild(spinEl); }
 
   const {url,method,sendAsJson,headers} = cfg.n8n||{};
-  if(!url){ toast('Please configure webhook URL.','warning'); statusSetter('Missing URL'); btn.disabled=false; spin.remove(); return; }
+  if(!url){ toast('Please configure webhook URL.','warning'); statusSetter('Missing URL'); btn.disabled=false; if(isRefreshBtn){ spinRefresh(btn,false); } else if(spinEl){ spinEl.remove(); } return; }
 
   let fetchUrl=url, fetchOpts={ method:(method||'POST'), headers:{}, mode:'cors' };
   (headers||[]).forEach(h=>{ if(h.key) fetchOpts.headers[h.key]=h.value||''; });
@@ -346,7 +375,11 @@ async function fetchAndApply(panel, cfg, applyFn, formDataOverride){
   }catch(err){
     toast('Network/CORS error calling webhook.','danger');
     statusSetter('Error (see console / CORS)'); console.error(err);
-  }finally{ btn.disabled=false; spin.remove(); fitCanvasHeight(); }
+  }finally{
+    btn.disabled=false;
+    if(isRefreshBtn){ spinRefresh(btn,false); } else if(spinEl){ spinEl.remove(); }
+    fitCanvasHeight();
+  }
 }
 
 /* ========== Data widgets ========== */
@@ -378,7 +411,7 @@ function renderDataWidget(panel, cfg){
   // Header refresh button
   $('.btn-refresh', panel).addEventListener('click', async (e)=>{
     e.preventDefault();
-    await fetchAndApply(panel, cfg, (data, text, blob, ct)=>{
+    await fetchAndApply(panel, cfg, (data)=>{
       if((cfg.dataSpec?.mode||'kpi')==='list'){
         const listPath = cfg.dataSpec.listPath||'items';
         const labelPath = cfg.dataSpec.itemLabelPath||'title';
@@ -460,7 +493,7 @@ function renderCustomWidget(panel, cfg){
         {id:uid(),type:'select',name:'tone',options:['Professional','Friendly','Playful']}
       ]).map(f=>inputHtml(f)).join('')}
       <div class="${(cfg.customSpec?.responseOnly)?'col-12 d-grid':'col-md-2 d-grid'}">
-        <button class="btn btn-accent btn-pill btn-run" type="submit"><i data-lucide="play"></i> ${esc(cfg.runLabel||'Run')}</button>
+        <button class="btn btn-accent btn-pill btn-run" type="submit"><i data-lucide="play"></i> <span>${esc(cfg.runLabel||'Run')}</span></button>
       </div>
     </form>
     <div class="divider d-none"></div>
@@ -495,7 +528,7 @@ function inputHtml(f){
   return `<div class="col-md-6"><input id="${id}" name="${nm}" class="form-control" ${ph}/></div>`;
 }
 
-/* ========== Config forms (unchanged from v2 but used in overlay) ========== */
+/* ========== Config forms ========== */
 function identityFields(cfg){
   return `
     <div class="row g-2">
@@ -712,7 +745,7 @@ Status 200, Content-Type application/json, Body: {{$json}}
     </form>`;
 }
 
-/* ========== Config attach (overlay-powered) ========== */
+/* ========== Attach config (overlay) ========== */
 function attachConfig(panel, cfg, kind){
   const header = panel.querySelector('.head');
 
@@ -723,7 +756,6 @@ function attachConfig(panel, cfg, kind){
     lucide.createIcons();
   }
 
-  // Open overlay
   header.querySelector('.btn-config').onclick = ()=>{
     const formHtml = kind==='data'? dataConfigForm(cfg) : kind==='chart'? chartConfigForm(cfg) : customConfigForm(cfg);
     openOverlay(`Configure: ${cfg.title}`, formHtml);
@@ -737,7 +769,6 @@ function attachConfig(panel, cfg, kind){
       if(t.matches('[data-cfg="icon"]')){ cfg.icon=t.value.trim()||'box'; rerenderHeader(); }
       if(t.matches('[data-cfg="title"]')){ cfg.title=t.value; rerenderHeader(); }
       if(t.matches('[data-cfg="typeLabel"]')){ cfg.typeLabel=t.value; rerenderHeader(); }
-
       if(t.matches('[data-cfg="url"]')) cfg.n8n.url=t.value.trim();
       if(t.matches('[data-cfg="method"]')) cfg.n8n.method=t.value;
       if(t.matches('[data-cfg="sendAsJson"]')) cfg.n8n.sendAsJson=(t.value==='json');
@@ -753,7 +784,6 @@ function attachConfig(panel, cfg, kind){
         if(t.matches('[data-cfg="itemLabelPath"]')) cfg.dataSpec.itemLabelPath=t.value;
         if(t.matches('[data-cfg="itemUrlPath"]')) cfg.dataSpec.itemUrlPath=t.value;
       }
-
       if(kind==='chart'){
         if(t.matches('[data-cfg="chartStyle"]')){ cfg.chartSpec.style=t.value; openOverlay(`Configure: ${cfg.title}`, chartConfigForm(cfg)); bindOverlayEvents(); return; }
         if(t.matches('[data-cfg="runLabel"]')) cfg.runLabel=t.value;
@@ -762,7 +792,6 @@ function attachConfig(panel, cfg, kind){
         if(t.matches('[data-cfg="datasetLabel"]')) cfg.chartSpec.datasetLabel=t.value;
         if(t.matches('[data-cfg="yMaxPath"]')) cfg.chartSpec.yMaxPath=t.value;
       }
-
       if(kind==='custom'){
         if(t.matches('[data-cfg="runLabel"]')) cfg.runLabel=t.value;
         if(t.matches('[data-cfg="responseOnly"]')) cfg.customSpec.responseOnly = t.checked;
@@ -774,14 +803,12 @@ function attachConfig(panel, cfg, kind){
           if(t.matches('[data-edit="options"]')) f.options=t.value.split(',').map(x=>x.trim()).filter(Boolean);
         }
       }
-
       // headers
       if(t.closest('[data-hrow]')){
         const row=t.closest('[data-hrow]'); const id=row.getAttribute('data-hrow');
         const h=(cfg.n8n.headers||[]).find(x=>x.id===id);
-        if(!h) return; if(t.matches('[data-h="key"]')) h.key=t.value; if(t.matches('[data-h="val"]')) h.value=t.value;
+        if(h){ if(t.matches('[data-h="key"]')) h.key=t.value; if(t.matches('[data-h="val"]')) h.value=t.value; }
       }
-
       const all=store.load(); all[cfg.id]=cfg; store.save(all);
     });
 
@@ -798,24 +825,9 @@ function attachConfig(panel, cfg, kind){
       if(e.target.matches('.wcfg')){ e.preventDefault(); store.set(cfg.id,cfg); toast('Saved.','success'); closeOverlay(); rerenderPanel(panel, cfg); }
     });
   }
-
-  // Titlebar refresh
-  const refreshBtn = header.querySelector('.btn-refresh');
-  if(refreshBtn){
-    refreshBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      // Trigger the proper runner depending on kind
-      if(cfg.kind==='data'){
-        // simulate click handled in renderDataWidget
-        panel.querySelector('.btn-refresh').dispatchEvent(new Event('click'));
-      }else if(cfg.kind==='chart'){
-        panel.querySelector('.btn-refresh').dispatchEvent(new Event('click'));
-      }
-    });
-  }
 }
 
-/* ========== Panel (re)render ========== */
+/* ========== Rerender ========== */
 function rerenderPanel(panel, cfg){
   panel.innerHTML = headerTemplate(cfg) + bodyShell();
   lucide.createIcons();
@@ -825,7 +837,7 @@ function rerenderPanel(panel, cfg){
   fitCanvasHeight();
 }
 
-/* ========== Init panels ========== */
+/* ========== Init ========== */
 function initPanel(panel){
   const id = panel.dataset.id;
   const kind = panel.dataset.kind;
