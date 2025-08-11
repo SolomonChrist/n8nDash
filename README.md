@@ -4,39 +4,47 @@
 
 n8nDash is an open-source dashboard platform designed to help individuals, teams, and businesses harness the full power of n8n automations, webhooks, and real-time data — all in one place. Whether you're a solopreneur, social media creator, or C-level executive, n8nDash serves as your command center for automation.
 
+NOTE: THIS IS STILL UNDER HEAVY DEVELOPMENT! USE AT YOUR OWN RISK! There are no warranties or guarantees on this software! Currently maintained by Solomon Christ and various community members.
+
+## DEMO VIDEO
+https://youtu.be/Wojf740JaTg?si=om3vSzKIsp7jweL1
+
 ## 🎯 Vision
 
-Our goal is to help people live the greatest lives ever lived — using AI + Automation. n8nDash makes this possible by providing an intuitive, touchscreen-ready interface for managing and triggering your n8n automations.
+Our goal is to help people live the greatest lives ever lived — using AI + Automation. n8nDash makes this possible by providing an intuitive, touchscreen-ready interface for managing and triggering your n8n automations. It's made for AI + Automation professionals to help non-technical users by giving them a non-technical beautiful frontend UI to show them. This could be a business dashboard for a busy CEO or a social media dashboard for the local influencer or a data dashboard for the local manufacturing company that also needs to write blogs using AI. Whatever your vision, you can design it with the power of n8n under the hood and n8nDash in the frontend!
+
+## 🎯 WHY WAS THIS MADE?
+
+Solomon Christ has been helping teach n8n to thousands of people around the world and many of the customers and clients in the United States and globally don't know what AI + Automation is. Infact many hear the words AI but don't really know how to apply it to their daily lives or businesses. Many just want a magic button that can do X OR a single location to easily view their data or a way that is non-technical to just get results. Many n8n + Automation users eventually end up building out a custom dashboard for their clients. The idea here was to build out something that the whole community across n8n + AI + Automation could use and build together that would allow non-technical users to be able to enjoy the results of many of our complex n8n workflows, without having to worry about going into an n8n backend or worse, changing the n8n workflow by mistake. As mass adoption eventually starts to take over with AI + Automation in the coming years, having an easy to use frontend dashboard for non-technical users becomes even more important!
 
 ## ✨ Features
 
 - 🔥 **One-Tap Automation**
   - Trigger n8n workflows instantly via webhook buttons
   - Custom button layouts and configurations
-  - Mobile and touchscreen optimized
 
 - 📊 **Live Data Integration**
-  - Display real-time data from CRMs
-  - Social media account metrics
-  - Calendar integrations
+  - Display real-time data (Various types of Chart widgets including Line and Bar charts!)
+  - Social media account metrics (Can get any type of Data to display in widgets)
   - Custom data sources via n8n webhooks
+  - Custom Widgets that can be built to allow for any data input from the users (Ex. Generating a blog using AI via a User input)
 
 - 🔄 **Dashboard Sharing**
-  - Export dashboards as JSON
-  - Import shared dashboard configurations
-  - Community sharing support
+  - Export dashboards as JSON (PLANNED)
+  - Import shared dashboard configurations (PLANNED)
+  - Community sharing support (PLANNED)
 
 - 🎨 **Customizable Interface**
-  - Grid-based widget layout (160x90)
-  - Multiple dashboard support
-  - Responsive design for all devices
+  - Grid-based widget layout
+  - Multiple dashboard support (PLANNED)
+  - Responsive design for all devices (PLANNED - Currently Desktop)
 
 ## 🛠️ Tech Stack
 
 - **Backend**: PHP 7.4+
 - **Database**: MySQL 5.7+
 - **Frontend**: HTML + Bootstrap
-- **Server**: Apache/Nginx
+- **Server**: Apache
 - **Integration**: n8n Webhook API
 
 ## 🚀 Quick Start
@@ -46,57 +54,11 @@ Our goal is to help people live the greatest lives ever lived — using AI + Aut
    git clone https://github.com/SolomonChrist/n8nDash.git
    ```
 
-2. Navigate to the installation page:
-   ```
-   http://your-server/n8nDash/install/install.php
-   ```
+2. Navigate to the current index.php file (All code is currently in this, edit as you like to make a custom dashboard):
 
-3. Follow the installation wizard to set up your database.
+3. Upload to your php powered web server
 
-4. Log in with default credentials:
-   - Username: `admin`
-   - Password: `password`
-
-5. **Important**: Change your password immediately after first login!
-
-## 📖 Manual Installation
-
-For advanced users who prefer manual setup:
-
-1. Clone the repository
-2. Create a MySQL database
-3. Import the schema from `install/init.sql`
-4. Configure `config/database.php` with your credentials:
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_USER', 'your_username');
-   define('DB_PASS', 'your_password');
-   define('DB_NAME', 'your_database_name');
-   ```
-
-## 🎨 Creating Your First Dashboard
-
-1. Log in to your n8nDash installation
-2. Click "New Dashboard" in the sidebar
-3. Name your dashboard
-4. Add widgets:
-   - Webhook buttons for automation triggers
-   - Data display panels
-   - Text inputs for dynamic data
-   - Status labels
-
-## 🔗 n8n Integration
-
-1. In n8n:
-   - Create a new workflow
-   - Add a webhook node as trigger
-   - Copy the webhook URL
-
-2. In n8nDash:
-   - Create a new button widget
-   - Paste the webhook URL
-   - Configure any parameters
-   - Save and test!
+CURRENTLY this is still in MVP. It works with your n8n system and you can hard code things at the moment. In its current state its a great vision for things to come!
 
 ## 🤝 Contributing
 
@@ -110,87 +72,18 @@ We believe in the power of community! Whether you're fixing bugs, adding feature
 
 ## 📫 Support
 
+Project Email: n8ndash@gmail.com (All support, security, bugs, feature requests, etc. here please)
+
+Current Contributors: Solomon Christ
+
 Please join my Skool page and Learn More about AI + Automation: [Learn Automation](https://www.skool.com/learn-automation/about)
 
 n8n Community Link: https://community.n8n.io/t/n8ndash-an-open-source-dashboard-for-n8n/
 
-Add Me To LinkedIn: https://www.linkedin.com/in/solomonchrist0/
+Add Me To LinkedIn: https://www.linkedin.com/in/solomonchristai/
 
 Follow Me On YouTube: https://www.youtube.com/@SolomonChristAI
 
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Setup Instructions
-
-1. **Database Configuration**
-   - Copy `config/config.example.php` to `config/config.php`
-   - Update the database credentials in `config/config.php`:
-     ```php
-     define('DB_HOST', 'your_database_host');
-     define('DB_USER', 'your_database_username');
-     define('DB_PASS', 'your_database_password');
-     define('DB_NAME', 'your_database_name');
-     ```
-
-2. **Directory Permissions**
-   - Ensure these directories are writable:
-     ```bash
-     chmod 755 uploads/
-     chmod 755 uploads/logos/
-     ```
-
-3. **Database Setup**
-   - Import the database schema:
-     ```bash
-     mysql -u your_username -p your_database_name < sql/schema.sql
-     ```
-   - Create your first admin user:
-     ```sql
-     INSERT INTO users (username, email, password, is_admin) 
-     VALUES ('admin', 'admin@example.com', PASSWORD('your_password'), 1);
-     ```
-
-4. **Web Server Configuration**
-   - Point your web server to the project root
-   - Ensure PHP has write permissions to the uploads directory
-   - Configure your web server to handle PHP files
-
-5. **Testing**
-   - Visit the application URL
-   - Log in with your admin credentials
-   - Try creating a dashboard and widgets
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**
-   - Verify database credentials in config.php
-   - Ensure database server is running
-   - Check database user permissions
-
-2. **Upload Issues**
-   - Check directory permissions
-   - Verify PHP file upload settings
-   - Check file size limits
-
-3. **Session Issues**
-   - Verify PHP session configuration
-   - Check session directory permissions
-   - Clear browser cookies
-
-### Debug Mode
-
-To enable debug mode, set in config.php:
-```php
-define('DEBUG_MODE', true);
-```
-
-## Support
-
-For issues or questions, please:
-1. Check the troubleshooting guide
-2. Open an issue on GitHub
-3. Contact your administrator 
